@@ -16,7 +16,7 @@ X = symbol(TOK, int, global)
 '''
 
 
-import token
+from token import Token
 
 
 class Symbol():
