@@ -20,10 +20,12 @@ from token import Token
 
 
 class Symbol():
-    def __init__(self, token, s_type, scope):
+    def __init__(self, token, s_type, scope, declared, initialized):
         self.token = token
         self.s_type = s_type
         self.scope = scope
+        self.declared = declared
+        self.initialized = initialized
 
 
 class SymbolTable():
