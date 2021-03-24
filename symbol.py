@@ -1,4 +1,12 @@
-'''
+"""
+Danilo Bizarria
+Kaike Rodrigues
+Markel Duarte
+Matheus Ferreira
+Rafael Lino
+"""
+
+"""
 {
 int a = 10;
 }
@@ -13,7 +21,7 @@ Token - Linha do codigo, lexema, tokenType
 
 X = symbol(TOK, int, global)
 
-'''
+"""
 
 
 from token import Token
