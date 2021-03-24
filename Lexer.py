@@ -95,8 +95,7 @@ class Lexer:
             '>': lambda: self.push_token(GREATER_EQUAL if is_next_char("=") else GREATER),
             '<': lambda: self.push_token(LESS_EQUAL if is_next_char("=") else LESS),
             ' ': lambda: None,
-            '\n': lambda: self.line += 1
-              return None
+#            '\n': lambda: self.line += 1
             '': None
         }
 
