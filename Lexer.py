@@ -34,12 +34,50 @@ from enum import Enum
 
 
 class Lexer:
+    
+
     def __init__(self, code):
         self.code = code
         self.tokens = []
         self.tokenStart = 0
         self.nextIndex = 0
         self.line = 1
+
+        cases = {
+            '(': lambda: self.push_token(LEFT_PAREN),
+            ')': lambda: self.push_token(RIGHT_PAREN),
+            '{': lambda: self.push_token(LEFT_BRACE),
+            '}': lambda: self.push_token(RIGHT_BRACE),
+            ',': lambda: self.push_token(COMMA),
+            '.': lambda: self.push_token(DOT),
+            '-': lambda: self.push_token(MINUS),
+            '+': lambda: self.push_token(PLUS),
+            ';': lambda: self.push_token(SEMICOLON),
+            '*': lambda: self.push_token(STAR),
+            '?': lambda: self.push_token(QUESTION),
+            ':': lambda: self.push_token(COLON),
+                
+            '/': lambda: self.push_token(NOT_EQUAL if is_next_char("=") else SLASH),
+            '=': lambda: self.push_token(EQUAL_EQUAL if is_next_char("=") else EQUAL),
+            '>': lambda: self.push_token(GREATER_EQUAL if is_next_char("=") else GREATER),
+            '<': lambda: self.push_token(LESS_EQUAL if is_next_char("=") else LESS), 
+
+            # ignore whitespace
+            # todo: handle comments 
+             ' ': lambda: self.switch_char(self.next_char())(),
+            '\n': lambda: self.next_line()(),
+             '"': lambda: self.push_str_token(),
+        }
+
+        # python excludes end in (start, end)
+        for c_num in range('0','9' + 1):
+            cases[c_num] = lambda: self.number()
+
+        for c_lower in range('a', 'z' + 1):
+            cases[c_lower] = lambda: self.identifier()
+
+        for c_upper in range('A', 'Z' + 1):
+            cases[c_upper] = lambda: self.type()
 
 
     # iterator methods
@@ -74,32 +112,13 @@ class Lexer:
         
         return False
 
+    def next_line(self):
+        self.line += 1
+        return switch_char(self.next_char())
+
 
     def switch_char(self, c):
-        cases = {
-            '(': lambda: self.push_token(LEFT_PAREN),
-            ')': lambda: self.push_token(RIGHT_PAREN),
-            '{': lambda: self.push_token(LEFT_BRACE),
-            '}': lambda: self.push_token(RIGHT_BRACE),
-            ',': lambda: self.push_token(COMMA),
-            '.': lambda: self.push_token(DOT),
-            '-': lambda: self.push_token(MINUS),
-            '+': lambda: self.push_token(PLUS),
-            ';': lambda: self.push_token(SEMICOLON),
-            '*': lambda: self.push_token(STAR),
-            '?': lambda: self.push_token(QUESTION),
-            ':': lambda: self.push_token(COLON),
-                
-            '/': lambda: self.push_token(NOT_EQUAL if is_next_char("=") else SLASH),
-            '=': lambda: self.push_token(EQUAL_EQUAL if is_next_char("=") else EQUAL),
-            '>': lambda: self.push_token(GREATER_EQUAL if is_next_char("=") else GREATER),
-            '<': lambda: self.push_token(LESS_EQUAL if is_next_char("=") else LESS),
-            ' ': lambda: None,
-#            '\n': lambda: self.line += 1
-            '': None
-        }
-
-        return cases[c]
+        return self.cases.get(c, None)
 
 
     def get_token(self):
