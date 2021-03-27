@@ -1,0 +1,40 @@
+// nomes: asson, nossa?
+
+// sem duas juntas
+Number raio;
+Number area;
+
+// Number, String
+
+x and y or (not z);
+
+" "
+
+x /= y
+
+while(Bool x) {
+  
+}
+
+if(Bool x) {
+
+}
+// sem else if (elif, afins...)
+else { 
+ 
+}
+
+Double tri = 1 * 2 / 3;
+
+Void input(String str) {
+  // coment
+
+  return;
+}
+
+input(raio);
+
+area = 3.14159 * raio * raio;
+
+putStr("A = ");
+putStrLn(area);
