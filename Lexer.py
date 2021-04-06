@@ -29,12 +29,12 @@ Token("a", IDENTIFIER, ...)
 type 
 """
 
+from tekken import Token
+from tekken import TokenType
 
-from enum import Enum
 
-
+code = input()
 class Lexer:
-    
 
     def __init__(self, code):
         self.code = code
@@ -43,24 +43,24 @@ class Lexer:
         self.nextIndex = 0
         self.line = 1
 
-        cases = {
-            '(': lambda: self.push_token(LEFT_PAREN),
-            ')': lambda: self.push_token(RIGHT_PAREN),
-            '{': lambda: self.push_token(LEFT_BRACE),
-            '}': lambda: self.push_token(RIGHT_BRACE),
-            ',': lambda: self.push_token(COMMA),
-            '.': lambda: self.push_token(DOT),
-            '-': lambda: self.push_token(MINUS),
-            '+': lambda: self.push_token(PLUS),
-            ';': lambda: self.push_token(SEMICOLON),
-            '*': lambda: self.push_token(STAR),
-            '?': lambda: self.push_token(QUESTION),
-            ':': lambda: self.push_token(COLON),
+        self.cases = {
+            '(': lambda: self.push_token(TokenType.LEFT_PAREN, '('),
+            ')': lambda: self.push_token(TokenType.RIGHT_PAREN, ')'),
+            '{': lambda: self.push_token(TokenType.LEFT_BRACE, '{'),
+            '}': lambda: self.push_token(TokenType.RIGHT_BRACE, '}'),
+            ',': lambda: self.push_token(TokenType.COMMA, ','),
+            '.': lambda: self.push_token(TokenType.DOT, '.'),
+            '-': lambda: self.push_token(TokenType.MINUS, '-'),
+            '+': lambda: self.push_token(TokenType.PLUS, '+'),
+            ';': lambda: self.push_token(TokenType.SEMICOLON, ';'),
+            '*': lambda: self.push_token(TokenType.STAR, '*'),
+            '?': lambda: self.push_token(TokenType.QUESTION, '?'),
+            ':': lambda: self.push_token(TokenType.COLON, ':'),
                 
-            '/': lambda: self.push_token(NOT_EQUAL if is_next_char("=") else SLASH),
-            '=': lambda: self.push_token(EQUAL_EQUAL if is_next_char("=") else EQUAL),
-            '>': lambda: self.push_token(GREATER_EQUAL if is_next_char("=") else GREATER),
-            '<': lambda: self.push_token(LESS_EQUAL if is_next_char("=") else LESS), 
+            '/': lambda: self.push_token(TokenType.NOT_EQUAL, '/=') if is_next_char("=") else self.push_token(TokenType.SLASH, '/'),
+            '=': lambda: self.push_token(TokenType.EQUAL_EQUAL, '==') if is_next_char("=") else self.push_token(TokenType.EQUAL, '='),
+            '>': lambda: self.push_token(TokenType.GREATER_EQUAL, '>=') if is_next_char("=") else self.push_token(TokenType.GREATER, '>'),
+            '<': lambda: self.push_token(TokenType.LESS_EQUAL, '<=') if is_next_char("=") else self.push_token(TokenType.LESS, '<'), 
 
             # ignore whitespace
             # todo: handle comments 
@@ -68,16 +68,38 @@ class Lexer:
             '\n': lambda: self.next_line()(),
              '"': lambda: self.push_str_token(),
         }
+        
+
+
 
         # python excludes end in (start, end)
-        for c_num in range('0','9' + 1):
-            cases[c_num] = lambda: self.number()
+        for c_num in range(ord('0'), ord('9') + 1):
+            self.cases[chr(c_num)] = lambda: self.number()
 
-        for c_lower in range('a', 'z' + 1):
-            cases[c_lower] = lambda: self.identifier()
+        for c_lower in range(ord('a'), ord('z') + 1):
+            self.cases[chr(c_lower)] = lambda: self.push_char()
 
-        for c_upper in range('A', 'Z' + 1):
-            cases[c_upper] = lambda: self.type()
+        for c_upper in range(ord('A'), ord('Z') + 1):
+            self.cases[chr(c_upper)] = lambda: self.type()
+
+    def advance_char(self):
+        self.nextIndex += 1
+
+    def push_char(self):
+        idx_start = self.nextIndex - 1
+        while self.peek_char().isalpha():
+            self.advance_char()
+        idx_end = self.nextIndex
+
+        return self.push_token(TokenType.IDENTIFIER, self.code[idx_start:idx_end])
+
+
+    def push_token(tokenType, tokenChar):
+        newToken = Token(self.line, tokenChar, tokenType)
+        self.tokens.append(newToken)
+        return newToken
+
+
 
 
     # iterator methods
@@ -92,12 +114,18 @@ class Lexer:
     def has_next_char(self):
         return self.nextIndex < len(code)
 
+    def peek_char(self):
+        if not self.has_next_char():
+            return None
+        
+        c = self.code[self.nextIndex]
+        return c
 
     def next_char(self):
         if not self.has_next_char():
             return None
         
-        c = self.code[nextIndex]
+        c = self.code[self.nextIndex]
         self.nextIndex += 1
         return c
 
@@ -123,19 +151,21 @@ class Lexer:
 
     def get_token(self):
         c = self.next_char()
-        token = switch_char(c)
+        token = self.switch_char(c)()
         
         # whitespace
-        if Token is None:
-            token = self.get_token()
+        #if Token is None:
+        #    token = self.get_token()
 
         return token
 
             
     def getTokens(self):
+        tokenV = []
         while(self.has_next_char()):
-            c = self.next_char()
-            return self.switch_char(c)
+            token = self.get_token()
+            tokenV.append(token)
+        return tokenV
 
 # if(x>0){a+=10;}
 
@@ -147,3 +177,8 @@ class Lexer:
         c = self.code[self.charIndex]
         self.charIndex += 1
         return c
+
+lex = Lexer(code)
+
+string = lex.getTokens()
+print(string)
