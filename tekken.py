@@ -101,4 +101,9 @@ class Token():
         self.line = line
         self.name = name
         self.t_type = t_type
+    
+    def __str__(self):
+        str_token = f"(line {self.line}, \"{self.name}\", {self.t_type})"
+        return str_token
+
 
