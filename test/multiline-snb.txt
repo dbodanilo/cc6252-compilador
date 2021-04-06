@@ -1,0 +1,3 @@
+String s = 'abc';
+Number n = 10.2;
+Bool b = s == n and 10 < 20;

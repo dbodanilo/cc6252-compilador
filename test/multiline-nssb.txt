@@ -1,0 +1,4 @@
+Number a = 10;
+String b = "abc";
+String c = a + b;
+Bool d = c == 'abc10';
