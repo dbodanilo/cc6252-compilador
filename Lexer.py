@@ -31,6 +31,8 @@ type
 
 from sys import stdin
 
+import tekken 
+
 from tekken import Token
 from tekken import TokenType
 
@@ -63,14 +65,14 @@ class Lexer:
             '/': lambda: self.push_token(TokenType.NOT_EQUAL, '/=') if self.is_next_char("=") else self.push_token(TokenType.SLASH, '/'),
             '=': lambda: self.push_token(TokenType.EQUAL_EQUAL, '==') if self.is_next_char("=") else self.push_token(TokenType.EQUAL, '='),
             '>': lambda: self.push_token(TokenType.GREATER_EQUAL, '>=') if self.is_next_char("=") else self.push_token(TokenType.GREATER, '>'),
-                '<': lambda: self.push_token(TokenType.LESS_EQUAL, '<=') if self.is_next_char("=") else self.push_token(TokenType.LESS, '<'), 
+            '<': lambda: self.push_token(TokenType.LESS_EQUAL, '<=') if self.is_next_char("=") else self.push_token(TokenType.LESS, '<'), 
 
             # ignore whitespace
             # todo: handle comments 
             ' ': lambda: self.switch_char()() if self.has_next_char() else None,
-            '\n': lambda: self.next_line()(),
-             '"': lambda: self.push_string('"'),
-             "'": lambda: self.push_string("'"),
+            '\n': lambda: self.next_line()() if self.has_next_char() else None,
+            '"': lambda: self.push_string('"'),
+            "'": lambda: self.push_string("'"),
         }
         
         # python excludes end in (start, end)
@@ -83,8 +85,31 @@ class Lexer:
         for c_upper in range(ord('A'), ord('Z') + 1):
             self.cases[chr(c_upper)] = lambda: self.push_char(TokenType.TYPE)
 
+        self.reserved = {
+            # keywords
+            "and": TokenType.AND,
+            "break": TokenType.BREAK,
+            "continue": TokenType.CONTINUE,
+            "else": TokenType.ELSE,
+            "for": TokenType.FOR,
+            "if": TokenType.IF,
+            "not": TokenType.NOT,
+            "or": TokenType.OR,
+            "return": TokenType.RETURN,
+            "while": TokenType.WHILE,
+
+            # built-in
+            "false": TokenType.FALSE,
+            "null": TokenType.NULL,
+            "true": TokenType.TRUE,
+        }        
+
+
     def advance_char(self):
         self.nextIndex += 1
+
+#    def if_reserved(self, word, t_type):
+      
 
     def push_char(self, tk_type):
         idx_start = self.nextIndex - 1
@@ -92,7 +117,13 @@ class Lexer:
             self.advance_char()
         idx_end = self.nextIndex
 
-        return self.push_token(tk_type, self.code[idx_start:idx_end])
+        word = self.code[idx_start:idx_end] 
+
+        tk_type = self.reserved.get(word, tk_type) 
+
+#        tk_type = self.if_reserved(word, tk_type)
+
+        return self.push_token(tk_type, word)
 
     def push_number(self):
         idx_start = self.nextIndex - 1
@@ -165,20 +196,23 @@ class Lexer:
 
     def next_line(self):
         self.line += 1
+
         if self.has_next_char():
+            #print(self.code[self.nextIndex])
             return self.switch_char()
         else: 
             return lambda: None
 
 
     def switch_char(self):
-        return self.cases.get(self.next_char(), None)
+        return self.cases.get(self.next_char(), lambda: None)
 
 
     def get_token(self):
         tk_fun = self.switch_char()
 
-        token = tk_fun if tk_fun is None else tk_fun()
+#        token = tk_fun if tk_fun is None else tk_fun()
+        token = tk_fun()
         
         # whitespace
         #if Token is None:
@@ -187,28 +221,36 @@ class Lexer:
         return token
 
             
-    def getTokens(self):
-        tokenV = []
-        token = self.get_token()
-        while(token is not None):
-            token = self.get_token()
-            tokenV.append(token)
-        return tokenV
 
 # if(x>0){a+=10;}
 
     # uso interno pelo Lexer
-    def hasNextChar(self):
-        return self.charIndex + 1 < len(self.code)
+#    def hasNextChar(self):
+#        return self.charIndex + 1 < len(self.code)
 
-    def nextChar(self):
-        c = self.code[self.charIndex]
-        self.charIndex += 1
-        return c
+#    def nextChar(self):
+#        c = self.code[self.charIndex]
+#        self.charIndex += 1
+#        return c
+
+#print(code)
+#print()
 
 lex = Lexer(code)
 
-tokens = lex.getTokens()
+def getTokens(lexer):
+    tokenV = []
+
+    # consumia primeiro token 
+    # sem inserir na lista
+#    token = lexer.get_token()
+    while(lexer.has_next_char()):
+        token = lexer.get_token()
+        tokenV.append(token)
+    return tokenV
+
+
+tokens = getTokens(lex)
 
 print("[")
 for tk in tokens:
