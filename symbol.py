@@ -24,16 +24,20 @@ X = symbol(TOK, int, global)
 """
 
 
-from token import Token
+from tekken import Token
 
 
 class Symbol():
-    def __init__(self, token, s_type, scope, declared, initialized):
+    def __init__(self, token, s_type = None, scope = None, declared = False, initialized = False):
         self.token = token
         self.s_type = s_type
         self.scope = scope
         self.declared = declared
         self.initialized = initialized
+
+    def __str__(self):
+        str_symbol = f'Token: {str(self.token)}'
+        return str_symbol
 
 
 class SymbolTable():
@@ -42,12 +46,18 @@ class SymbolTable():
         self.table = {}
 
 
-    def insert(self, sym, name):
-        table[name] = sym
+    def insert(self, name, sym):
+        self.table[name] = sym
 
         return sym
 
 
     def lookup(self, name):
-        return table[name]
+        return self.table[name]
+
+    def __str__(self):
+        str_table = []
+        for name in self.table:
+            str_table.append(f'{name}: {str(self.table[name])}')
+        return str(str_table)
 

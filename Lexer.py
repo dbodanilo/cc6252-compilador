@@ -31,18 +31,22 @@ type
 
 from sys import stdin
 
-import tekken 
+import tekken
 
 from tekken import Token
 from tekken import TokenType
+from symbol import Symbol
+from symbol import SymbolTable
 
 
-# code = input()
+#code = input()
 code = stdin.read()
+symbolTable = SymbolTable()
 class Lexer:
 
-    def __init__(self, code):
+    def __init__(self, code, symbolTable):
         self.code = code
+        self.symbolTable = symbolTable
         self.tokens = []
         self.tokenStart = 0
         self.nextIndex = 0
@@ -143,7 +147,8 @@ class Lexer:
         idx_start = self.nextIndex - 1
         while self.has_next_char() and self.peek_char() != delim:
             self.advance_char()
-
+        if not self.has_next_char():
+            return self.erro('String nao terminada')
         # get second delim
         self.advance_char()
         idx_end = self.nextIndex
@@ -153,6 +158,9 @@ class Lexer:
     def push_token(self, tokenType, tokenChar):
         newToken = Token(self.line, tokenChar, tokenType)
         self.tokens.append(newToken)
+        if tokenType == TokenType.TYPE or tokenType == TokenType.IDENTIFIER:
+            sym = Symbol(newToken)
+            self.symbolTable.insert(tokenChar, sym) 
         return newToken
 
 
@@ -166,7 +174,7 @@ class Lexer:
    
 
     def has_next_char(self):
-        return self.nextIndex < len(code)
+        return self.nextIndex < len(self.code)
 
     def peek_char(self):
         if not self.has_next_char():
@@ -205,7 +213,15 @@ class Lexer:
 
 
     def switch_char(self):
-        return self.cases.get(self.next_char(), lambda: None)
+        return self.cases.get(self.next_char(), self.erro)
+
+    def get_current_char(self):
+        return self.code[self.nextIndex - 1]
+
+    def erro(self, msg = 'Caractere nao reconhecido'):
+        print(f'Linha {self.line} - {msg}: {self.get_current_char()}')
+        tokenError = Token(self.line, self.get_current_char(), TokenType.ERROR)
+        return tokenError
 
 
     def get_token(self):
@@ -213,7 +229,7 @@ class Lexer:
 
 #        token = tk_fun if tk_fun is None else tk_fun()
         token = tk_fun()
-        
+
         # whitespace
         #if Token is None:
         #    token = self.get_token()
@@ -236,7 +252,7 @@ class Lexer:
 #print(code)
 #print()
 
-lex = Lexer(code)
+lex = Lexer(code, symbolTable)
 
 def getTokens(lexer):
     tokenV = []
@@ -257,4 +273,4 @@ for tk in tokens:
     print(str(tk))
 
 print("]")
-
+print(str(lex.symbolTable))

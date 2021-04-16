@@ -95,6 +95,8 @@ class TokenType(Enum):
     # true
     TRUE = 37
 
+    ERROR = 38
+
 
 class Token():
     def __init__(self, line, name, t_type):
