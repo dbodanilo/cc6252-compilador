@@ -1,0 +1,71 @@
+declaration = type , ( identifier |  assignment ) , ";" ;
+(*Double tri = 1 * 2 / 3;*)
+assignment = identifier , "=" , value;
+
+identifier = letter , { letter | digit | "_" } ;
+
+whitespace = " ";
+
+block = "{" ,{ line }, "}";
+
+line = declaration | (assignment , ";") | conditional | loopFor | loopWhile | function;
+
+value = number | string | identifier | "false" | "null" | "true";
+
+letter_upper = "A" | "B" | "C" | "D" | "E" | "F" | "G"
+             | "H" | "I" | "J" | "K" | "L" | "M" | "N"
+             | "O" | "P" | "Q" | "R" | "S" | "T" | "U"
+             | "V" | "W" | "X" | "Y" | "Z" ;
+
+letter_lower = "a" | "b" | "c" | "d" | "e" | "f" | "g"
+             | "h" | "i" | "j" | "k" | "l" | "m" | "n"
+             | "o" | "p" | "q" | "r" | "s" | "t" | "u"
+             | "v" | "w" | "x" | "y" | "z" ;
+
+letter = letter_lower | letter_upper;
+
+symbol = "[" | "]" | "{" | "}" | "(" | ")" | "<" | ">"
+       | "'" | '"' | "=" | "|" | "." | "," | ";" ;       
+
+special = "@" | "#" | "$" | "%";
+
+
+digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+
+
+number = [ "+" | "-" ] , digit { , digit } [ , "." , digit { , digit } ] ;
+
+(*[+-]?[0-9]+(\.[0-9]+)?*)
+
+string = '"' ,{ letter | digit | symbol | special } ,'"' ";";
+(*".*"*)
+
+identifier = letter_lower { , (letter | digit | "_" ) };
+(*[a-z][a-zA-Z0-9_]**)
+
+type = letter_upper { , (letter | digit | "_" ) };
+
+(*[A-Z][a-zA-Z0-9_]**)
+
+
+conditional = "if" , "(" , assignment , ")" , block [ , "else" , block ]  ;
+
+(*if(x) {}*)
+
+(*if(x) {}else {}*)
+
+loopWhile = "while" , "(" , assignment , ")" , block;
+
+(*while(x) {}*)
+
+loopFor = "for" , "(" , value , "in" , assignment , ")" , block ;
+
+(*for(frutas in fruteira){}*)
+
+function = type , identifier , "(" [ , param { , "," , param } ] , ")" ,block;
+
+(*Void input(Letter str) {return;}*)
+
+param = type , identifier [ , "=" , value ] ;
+
+(*Letter str*)
