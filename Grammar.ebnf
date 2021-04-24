@@ -1,16 +1,37 @@
-declaration = type , ( identifier |  assignment ) , ";" ;
-(*Double tri = 1 * 2 / 3;*)
-assignment = identifier , "=" , value;
+line = declaration 
+     | (assignment , ";") 
+     | conditional 
+     | loopFor 
+     | loopWhile 
+     | function ;
 
-identifier = letter , { letter | digit | "_" } ;
+declaration = type , ( identifier |  assignment ) , ";" ;
+(* e.g.: Double tri = 1 * 2 / 3; *)
+
+type = letter_upper { , (letter | digit | "_" ) };
+(* [A-Z][a-zA-Z0-9_]* *)
+
+identifier = letter_lower { , ( letter | digit | "_" ) };
+(*[a-z][a-zA-Z0-9_]**)
+
+assignment = identifier , "=" , ( value | assignment ) ;
+
+value = number 
+      | string 
+      | identifier 
+      | "false" 
+      | "null" 
+      | "true" ;
+
+number = [ "+" | "-" ] , digit { , digit } [ , "." , digit { , digit } ] ;
+(* [+-]?[0-9]+(\.[0-9]+)? *)
+
+string = '"' ,{ letter | digit | symbol | special | whitespace } ,'"' ";";
+(* ".*" *)
 
 whitespace = " ";
 
-block = "{" ,{ line }, "}";
-
-line = declaration | (assignment , ";") | conditional | loopFor | loopWhile | function;
-
-value = number | string | identifier | "false" | "null" | "true";
+letter = letter_lower | letter_upper;
 
 letter_upper = "A" | "B" | "C" | "D" | "E" | "F" | "G"
              | "H" | "I" | "J" | "K" | "L" | "M" | "N"
@@ -22,50 +43,28 @@ letter_lower = "a" | "b" | "c" | "d" | "e" | "f" | "g"
              | "o" | "p" | "q" | "r" | "s" | "t" | "u"
              | "v" | "w" | "x" | "y" | "z" ;
 
-letter = letter_lower | letter_upper;
+digit = "0" | "1" | "2" | "3" | "4" | "5" 
+      | "6" | "7" | "8" | "9" ;
 
 symbol = "[" | "]" | "{" | "}" | "(" | ")" | "<" | ">"
        | "'" | '"' | "=" | "|" | "." | "," | ";" ;       
 
 special = "@" | "#" | "$" | "%";
 
-
-digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
-
-
-number = [ "+" | "-" ] , digit { , digit } [ , "." , digit { , digit } ] ;
-
-(*[+-]?[0-9]+(\.[0-9]+)?*)
-
-string = '"' ,{ letter | digit | symbol | special } ,'"' ";";
-(*".*"*)
-
-identifier = letter_lower { , (letter | digit | "_" ) };
-(*[a-z][a-zA-Z0-9_]**)
-
-type = letter_upper { , (letter | digit | "_" ) };
-
-(*[A-Z][a-zA-Z0-9_]**)
-
-
 conditional = "if" , "(" , assignment , ")" , block [ , "else" , block ]  ;
+(* if(x) {} *)
+(* if(x) {} else {} *)
 
-(*if(x) {}*)
-
-(*if(x) {}else {}*)
-
-loopWhile = "while" , "(" , assignment , ")" , block;
-
-(*while(x) {}*)
+block = "{" , { line } , "}";
 
 loopFor = "for" , "(" , value , "in" , assignment , ")" , block ;
+(* for(frutas in fruteira){} *)
 
-(*for(frutas in fruteira){}*)
+loopWhile = "while" , "(" , assignment , ")" , block;
+(* while(x) {} *)
 
-function = type , identifier , "(" [ , param { , "," , param } ] , ")" ,block;
-
-(*Void input(Letter str) {return;}*)
+function = type , identifier , "(" [ , param { , "," , param } ] , ")" , block;
+(* Void input(Letter str) { return; } *)
 
 param = type , identifier [ , "=" , value ] ;
-
-(*Letter str*)
+(* Letter str *)
