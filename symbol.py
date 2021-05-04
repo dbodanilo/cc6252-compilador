@@ -36,7 +36,7 @@ class Symbol():
         self.initialized = initialized
 
     def __str__(self):
-        str_symbol = f'Token: {str(self.token)}'
+        str_symbol = f"{{ token:  {str(self.token)} }}"
         return str_symbol
 
 
@@ -56,8 +56,9 @@ class SymbolTable():
         return self.table[name]
 
     def __str__(self):
-        str_table = []
+        str_table = "{\n"
         for name in self.table:
-            str_table.append(f'{name}: {str(self.table[name])}')
-        return str(str_table)
+            str_table += f"\"{name}\": {str(self.table[name])},\n"
+        str_table += "}"
+        return str_table
 

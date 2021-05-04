@@ -270,7 +270,7 @@ tokens = getTokens(lex)
 
 print("[")
 for tk in tokens:
-    print(str(tk))
+    print(str(tk), end=",\n")
 
 print("]")
 print(str(lex.symbolTable))
