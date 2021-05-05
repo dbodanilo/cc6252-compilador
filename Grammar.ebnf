@@ -5,6 +5,8 @@ line = declaration
      | loopWhile 
      | function ;
 
+assignmentline = assignment , ";" ;
+
 declaration = type , ( identifier |  assignment ) , ";" ;
 (* e.g.: Double tri = 1 * 2 / 3; *)
 
