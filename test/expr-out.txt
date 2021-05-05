@@ -1,0 +1,14 @@
+(
+  (10 
+   (line 1, "+", TokenType.PLUS) 
+   (20 
+    (line 1, "*", TokenType.STAR) 
+    3)
+  ) 
+  (line 1, "-", TokenType.MINUS) 
+  (40 
+   (line 1, "/", TokenType.SLASH) 
+   5
+  )
+)
+

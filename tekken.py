@@ -95,7 +95,8 @@ class TokenType(Enum):
     # true
     TRUE = 37
 
-    ERROR = 38
+    EOF = 38
+    ERROR = 39
 
 
 class Token():

@@ -1,3 +1,26 @@
+
+-- Parser comments --
+Parser(self, Lexer):
+    while(Lexer.hasNextToken()):
+        # trata Token
+
+Int a = 2;
+
+[
+    ("Int", TYPE),
+    ("a", IDENTIFIER),
+    ("=", EQUAL),
+    ("2", NUMBER)
+]
+
+int a = 10;
+
+Symbol(Token tk, Type )
+
+Token("a", IDENTIFIER, ...)
+type 
+
+
 // Tipos de declaração
 
 // Matheus

@@ -15,7 +15,7 @@ class BinOpNode():
         self.op = op
 
     def __str__(self):
-        return f"({str(self.left)} {str(self.op)} {str(self.right)})"
+        return f"({str(self.left)} {self.op.name} {str(self.right)})"
 
 
 class DeclNode():

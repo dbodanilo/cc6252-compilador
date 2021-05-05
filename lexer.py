@@ -6,44 +6,12 @@ Matheus Ferreira
 Rafael Lino
 """
 
-"""
-# Parser(self, Lexer):
-#     while(Lexer.hasNextToken()):
-
-#         # trata Token
-
-# Int a = 2;
-
-# [
-#     ("Int", TYPE),
-#     ("a", IDENTIFIER),
-#     ("=", EQUAL),
-#     ("2", NUMBER)
-# ]
-
-int a = 10;
-
-Symbol(Token tk, Type )
-
-Token("a", IDENTIFIER, ...)
-type 
-"""
-
-from sys import stdin
-
-import tekken
-
 from tekken import Token
 from tekken import TokenType
 from symbol import Symbol
 from symbol import SymbolTable
 
-
-#code = input()
-code = stdin.read()
-symbolTable = SymbolTable()
 class Lexer:
-
     def __init__(self, code, symbolTable):
         self.code = code
         self.symbolTable = symbolTable
@@ -73,8 +41,8 @@ class Lexer:
 
             # ignore whitespace
             # todo: handle comments 
-            ' ': lambda: self.switch_char()() if self.has_next_char() else None,
-            '\n': lambda: self.next_line()() if self.has_next_char() else None,
+            ' ': lambda: self.switch_char()() if self.has_next_char() else self.push_token(TokenType.OEF, "EOF"),
+            '\n': lambda: self.next_line()() if self.has_next_char() else self.push_token(TokenType.EOF, "EOF"),
             '"': lambda: self.push_string('"'),
             "'": lambda: self.push_string("'"),
         }
@@ -109,12 +77,6 @@ class Lexer:
         }        
 
 
-    def advance_char(self):
-        self.nextIndex += 1
-
-#    def if_reserved(self, word, t_type):
-      
-
     def push_char(self, tk_type):
         idx_start = self.nextIndex - 1
         while self.has_next_char() and self.peek_char().isalpha():
@@ -125,9 +87,8 @@ class Lexer:
 
         tk_type = self.reserved.get(word, tk_type) 
 
-#        tk_type = self.if_reserved(word, tk_type)
-
         return self.push_token(tk_type, word)
+
 
     def push_number(self):
         idx_start = self.nextIndex - 1
@@ -170,11 +131,19 @@ class Lexer:
 
 
     def __next__(self):
-        return self.get_token()
+        if self.has_next_token():
+            return self.get_token()
+        else:
+            raise StopIteration
    
 
     def has_next_char(self):
         return self.nextIndex < len(self.code)
+
+
+    def advance_char(self):
+        self.nextIndex += 1
+
 
     def peek_char(self):
         if not self.has_next_char():
@@ -183,12 +152,18 @@ class Lexer:
         c = self.code[self.nextIndex]
         return c
 
+
     def next_char(self):
-        if not self.has_next_char():
-            return None
-        
-        c = self.code[self.nextIndex]
-        self.nextIndex += 1
+        c = self.peek_char()
+
+        if c is not None:
+            self.advance_char()
+
+#        if not self.has_next_char():
+#            return None
+#        
+#        c = self.code[self.nextIndex]
+#        self.nextIndex += 1
         return c
 
 
@@ -247,41 +222,4 @@ class Lexer:
 
         return token
 
-            
 
-# if(x>0){a+=10;}
-
-    # uso interno pelo Lexer
-#    def hasNextChar(self):
-#        return self.charIndex + 1 < len(self.code)
-
-#    def nextChar(self):
-#        c = self.code[self.charIndex]
-#        self.charIndex += 1
-#        return c
-
-#print(code)
-#print()
-
-lex = Lexer(code, symbolTable)
-
-def getTokens(lexer):
-    tokenV = []
-
-    # consumia primeiro token 
-    # sem inserir na lista
-#    token = lexer.get_token()
-    while(lexer.has_next_char()):
-        token = lexer.get_token()
-        tokenV.append(token)
-    return tokenV
-
-
-tokens = getTokens(lex)
-
-print("[")
-for tk in tokens:
-    print(str(tk), end=",\n")
-
-print("]")
-print(str(lex.symbolTable))

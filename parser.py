@@ -5,7 +5,21 @@ class Parser:
     def __init__(self, lexer, symbolTable):
         self.lexer = lexer
         self.current_token = self.lexer.get_token()
+#        print(self.current_token)
         self.symbolTable = symbolTable
+
+
+    def get_tokens(lexer):
+        tokens = []
+    
+        # consumia primeiro token 
+        # sem inserir na lista
+    #    token = lexer.get_token()
+        while(lexer.has_next_token()):
+            token = lexer.get_token()
+            tokens.append(token)
+        return tokens
+
 
     def parse(self):
 #        return self.line()
