@@ -7,96 +7,96 @@ Rafael Lino
 """
 
 
-from enum import Enum
+from enum import Enum, auto
 
 
 class TokenType(Enum):
     # one character
     # (
-    LEFT_PAREN = 1
+    LEFT_PAREN = auto()
     # )
-    RIGHT_PAREN = 2
+    RIGHT_PAREN = auto()
     # {
-    LEFT_BRACE = 3
+    LEFT_BRACE = auto()
     # }
-    RIGHT_BRACE = 4
+    RIGHT_BRACE = auto()
     # ,
-    COMMA = 5
+    COMMA = auto()
     # .
-    DOT = 6
+    DOT = auto()
     # -
-    MINUS = 7
+    MINUS = auto()
     # +
-    PLUS = 8
+    PLUS = auto()
     # ;
-    SEMICOLON = 9
+    SEMICOLON = auto()
     # /
-    SLASH = 10
+    SLASH = auto()
     # *
-    STAR = 11
+    STAR = auto()
     # ?
-    QUESTION = 12
+    QUESTION = auto()
     # :
-    COLON = 13
+    COLON = auto()
     # =
-    EQUAL = 14
+    EQUAL = auto()
     # >
-    GREATER = 15
+    GREATER = auto()
     # <
-    LESS = 16
+    LESS = auto()
 
     # two characters
     # /=
-    NOT_EQUAL = 17
+    NOT_EQUAL = auto()
     # ==
-    EQUAL_EQUAL = 18
+    EQUAL_EQUAL = auto()
     # >=
-    GREATER_EQUAL = 19
+    GREATER_EQUAL = auto()
     # <=
-    LESS_EQUAL = 20
+    LESS_EQUAL = auto()
 
     # regexes
     # [a-z][a-zA-Z0-9_]*
-    IDENTIFIER = 21
+    IDENTIFIER = auto()
     # ".*"
-    STRING = 22
+    STRING = auto()
     # [+-]?[0-9]+(\.[0-9]+)?
-    NUMBER = 23
+    NUMBER = auto()
     # [A-Z][a-zA-Z0-9_]*
-    TYPE = 24
+    TYPE = auto()
 
     # keywords
     # and
-    AND = 25
+    AND = auto()
     # break
-    BREAK = 26
+    BREAK = auto()
     # continue
-    CONTINUE = 27
+    CONTINUE = auto()
     # else
-    ELSE = 28
+    ELSE = auto()
     # for
-    FOR = 29
+    FOR = auto()
     # if
-    IF = 30
+    IF = auto()
     # not
-    NOT = 31
+    NOT = auto()
     # or
-    OR = 32
+    OR = auto()
     # return
-    RETURN = 33
+    RETURN = auto()
     # while
-    WHILE = 34
+    WHILE = auto()
 
     # built-in
     # false
-    FALSE = 35
+    FALSE = auto()
     # null
-    NULL = 36
+    NULL = auto()
     # true
-    TRUE = 37
+    TRUE = auto()
 
-    EOF = 38
-    ERROR = 39
+    EOF = auto()
+    ERROR = auto()
 
 
 class Token():
