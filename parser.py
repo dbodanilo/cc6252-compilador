@@ -7,6 +7,7 @@ class Parser:
         self.current_token = self.lexer.get_token()
 #        print(self.current_token)
         self.symbolTable = symbolTable
+        self.has_error = False
 
 
     def get_tokens(lexer):
@@ -22,8 +23,12 @@ class Parser:
 
 
     def parse(self):
+        nodeList = []
 #        return self.line()
-        return self.expr()
+#        return self.expr()
+        while self.current_token != TokenType.EOF and not self.has_error:
+            nodeList.append(self.line())
+        return nodeList
     
 
     def line(self):
@@ -37,15 +42,39 @@ class Parser:
                 TokenType.TYPE: self.declaration,
                 TokenType.IDENTIFIER: self.assignmentline,
                 TokenType.IF: self.conditional,
-                TokenType.FOR: self.loopfor,
-                TokenType.WHILE: self.loopwhile
+                #TokenType.FOR: self.loopfor,
+                #TokenType.WHILE: self.loopwhile
                 }
+        return cases.get(self.current_token.t_type, self.error)()
+
+    def conditional(self):
+        self.eat(TokenType.IF)
+        self.eat(TokenType.LEFT_PAREN)
+        condition = self.expr()
+        self.eat(TokenType.RIGHT_PAREN)
+        ifBlock = self.block()
+        elseBlock = None
+        if self.current_token.t_type == TokenType.ELSE:
+            self.eat(TokenType.ELSE)
+            elseBlock = self.block()
+
+        return IfNode(condition, ifBlock, elseBlock)
+
+    def block(self):
+        self.eat(TokenType.LEFT_BRACE)
+        lineList = []
+        while self.current_token.t_type != TokenType.RIGHT_BRACE:
+            lineList.append(self.line())
+        self.eat(TokenType.RIGHT_BRACE)
+        
+        return BlockNode(lineList) 
 
 
+    
     def assignmentline(self):
         _line = assignment()
 
-        eat(TokenType.SEMICOLON)
+        self.eat(TokenType.SEMICOLON)
         return LineNode(_line)
 
 
@@ -55,7 +84,7 @@ class Parser:
         while self.current_token.t_type == TokenType.EQUAL:
             left = _assignment
             op = self.current_token
-            eat(TokenType.EQUAL)
+            self.eat(TokenType.EQUAL)
 #            if self.current_token.t_type in (TokenType.IDENTIFIER, TokenType.STRING, TokenType.NUMBER):
             right = self.factor()
 #            else:
@@ -65,8 +94,26 @@ class Parser:
         return _assignment
 
 
-    def declaration(): 
-        pass
+    def declaration(self):
+        firstToken = self.current_token
+        self.eat(TokenType.TYPE)
+        if self.current_token.t_type == TokenType.IDENTIFIER:
+            left  = self.current_token
+            self.eat(TokenType.IDENTIFIER)
+            if self.current_token.t_type == TokenType.SEMICOLON:
+                decl = DeclNode(firstToken, left, None)
+                self.eat(TokenType.SEMICOLON)
+                return decl
+            self.eat(TokenType.EQUAL)
+            #if self.current_token.t_type in (TokenType.NUMBER, TokenType.STRING, TokenType.TRUE, TokenType.FALSE, TokenType.NULL):
+            #    right = self.current_token.t_type
+            #    self.eat(right.t_type)
+            #    decl = DeclNode(firstToken, left, right)
+            #    self.eat(TokenType.SEMICOLON)
+            #    return decl
+            right = self.expr()
+            self.eat(TokenType.SEMICOLON)
+            return DeclNode(firstToken, left, right)
 
  
     def expr(self):
@@ -104,9 +151,29 @@ class Parser:
         token = self.current_token
         _factor = None
 
-        if token.t_type == TokenType.NUMBER:
+        if token.t_type == TokenType.IDENTIFIER:
+            self.eat(TokenType.IDENTIFIER)
+            _factor = ValueNode(token, token.name)
+
+        elif token.t_type == TokenType.NUMBER:
             self.eat(TokenType.NUMBER)
-            _factor = ValueNode(token)
+            _factor = ValueNode(token, token.name)
+
+        elif token.t_type == TokenType.NULL:
+            self.eat(TokenType.NULL)
+            _factor = ValueNode(token, None)
+        
+        elif token.t_type == TokenType.TRUE:
+            self.eat(TokenType.TRUE)
+            _factor = ValueNode(token, True)
+
+        elif token.t_type == TokenType.FALSE:
+            self.eat(TokenType.FALSE)
+            _factor = ValueNode(token, False)
+
+        elif token.t_type == TokenType.STRING:
+            self.eat(TokenType.STRING)
+            _factor = ValueNode(token, token.name)
 
         elif token.t_type == TokenType.LEFT_PAREN:
             self.eat(TokenType.LEFT_PAREN)
@@ -121,11 +188,13 @@ class Parser:
         
 
     def error(self):
+        self.has_error = True
         print("Sintaxe inválida")
 
 
     def eat(self, token_type):
         if self.current_token.t_type == token_type:
+            print(self.current_token)
             if self.lexer.has_next_token():
                 self.current_token = self.lexer.get_token()
             else:

@@ -53,7 +53,7 @@ symbol = "[" | "]" | "{" | "}" | "(" | ")" | "<" | ">"
 
 special = "@" | "#" | "$" | "%";
 
-conditional = "if" , "(" , assignment , ")" , block [ , "else" , block ]  ;
+conditional = "if" , "(" , expr , ")" , block [ , "else" , block ]  ;
 (* if(x) {} *)
 (* if(x) {} else {} *)
 

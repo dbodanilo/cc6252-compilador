@@ -41,7 +41,8 @@ class Lexer:
 
             # ignore whitespace
             # todo: handle comments 
-            ' ': lambda: self.switch_char()() if self.has_next_char() else self.push_token(TokenType.OEF, "EOF"),
+            ' ': lambda: self.switch_char()() if self.has_next_char() else self.push_token(TokenType.EOF, "EOF"),
+            '\t': lambda: self.switch_char()() if self.has_next_char() else self.push_token(TokenType.EOF, "EOF"),
             '\n': lambda: self.next_line()() if self.has_next_char() else self.push_token(TokenType.EOF, "EOF"),
             '"': lambda: self.push_string('"'),
             "'": lambda: self.push_string("'"),

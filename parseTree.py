@@ -1,11 +1,32 @@
-
-class ValueNode():
-    def __init__(self, token):
-        self.token = token
-        self.value = token.name
+class IfNode():
+    def __init__(self, condition, ifBlock, elseBlock):
+        self.condition = condition
+        self.ifBlock = ifBlock
+        self.elseBlock = elseBlock
 
     def __str__(self):
-        return self.value
+        return f'(if ({str(self.condition)})\n{self.ifBlock}\nelse\n{self.elseBlock})'
+
+class BlockNode():
+    def __init__(self, lines):
+        self.lines = lines
+
+    def __str__(self):
+        return_string = "{\n"
+        for line in self.lines:
+            return_string += str(line)+"\n"
+        return_string += "}"
+
+        return return_string
+
+
+class ValueNode():
+    def __init__(self, token, value = None):
+        self.token = token
+        self.value = value
+
+    def __str__(self):
+        return str(self.value)
 
 
 class BinOpNode():
@@ -28,6 +49,6 @@ class DeclNode():
         self.right = right
 
     def __str__(self):
-        return f"{str(self.left)} = {str(self.right)}"
+        return f"({self.type_token.name} {self.left.name} = {str(self.right)})"
 
 

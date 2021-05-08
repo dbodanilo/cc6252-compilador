@@ -33,12 +33,12 @@ symbolTable = SymbolTable()
 #print(symbolTable)
 
 #lex = Lexer(code, symbolTable)
-
+#
 #tokens = get_tokens(lex)
 #print_tokens(tokens)
 #print(str(lex.symbolTable))
 
 par = Parser(Lexer(code, symbolTable), symbolTable)
 
-print(str(par.parse()))
+print_tokens(par.parse())
 

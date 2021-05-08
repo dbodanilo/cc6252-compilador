@@ -1,3 +1,2 @@
 Number a = 10;
 String b = abc;
-a + b;
