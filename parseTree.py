@@ -5,7 +5,7 @@ class IfNode():
         self.elseBlock = elseBlock
 
     def __str__(self):
-        return f'(if ({str(self.condition)})\n{self.ifBlock}\nelse\n{self.elseBlock})'
+        return f'(if ({str(self.condition)}) {self.ifBlock} else {self.elseBlock})'
 
 class BlockNode():
     def __init__(self, lines):
@@ -14,7 +14,7 @@ class BlockNode():
     def __str__(self):
         return_string = "{\n"
         for line in self.lines:
-            return_string += str(line)+"\n"
+            return_string += f"{str(line)},\n"
         return_string += "}"
 
         return return_string

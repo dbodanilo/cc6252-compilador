@@ -1,4 +1,7 @@
 
+((a >= b) and (c < d)) or (b == c)
+
+
 -- Parser comments --
 Parser(self, Lexer):
     while(Lexer.hasNextToken()):

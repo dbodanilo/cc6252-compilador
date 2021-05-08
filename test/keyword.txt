@@ -1,9 +1,0 @@
-if(a >= b) {
-  Int c = 10;
-  String d = "abc";
-  c + d;
-}
-else {
-  e = 20.5;
-}
-

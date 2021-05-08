@@ -1,0 +1,9 @@
+if(a >= b and c < d or b == c) {
+  Int c = 10;
+  String d = "abc";
+}
+else {
+  Number n = 20;
+}
+
+
