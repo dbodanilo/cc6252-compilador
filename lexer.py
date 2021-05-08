@@ -66,6 +66,7 @@ class Lexer:
             "else": TokenType.ELSE,
             "for": TokenType.FOR,
             "if": TokenType.IF,
+            "in": TokenType.IN,
             "not": TokenType.NOT,
             "or": TokenType.OR,
             "return": TokenType.RETURN,

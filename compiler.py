@@ -40,5 +40,5 @@ symbolTable = SymbolTable()
 
 par = Parser(Lexer(code, symbolTable), symbolTable)
 
-print_tokens(par.parse())
+print(str(par.parse()))
 

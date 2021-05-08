@@ -1,4 +1,6 @@
 
+for(Number i = 0; i < 10; i++) { } 
+
 ((a >= b) and (c < d)) or (b == c)
 
 

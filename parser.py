@@ -28,21 +28,23 @@ class Parser:
 #        return self.expr()
         while self.current_token.t_type != TokenType.EOF and not self.has_error:
             nodeList.append(self.line())
-        return nodeList
+        return BlockNode(nodeList)
     
 
     def line(self):
-        # line = declaration
-        #      | assignmentLine
+        # line = assignmentLine
         #      | conditional
+        #      | declaration
         #      | loopFor
         #      | loopWhile
+        #      | returnLine ;
         cases = {
-                TokenType.TYPE: self.declaration,
                 TokenType.IDENTIFIER: self.assignmentLine,
                 TokenType.IF: self.conditional,
-                #TokenType.FOR: self.loopFor,
-                #TokenType.WHILE: self.loopWhile
+                TokenType.TYPE: self.declaration,
+                TokenType.FOR: self.loopFor,
+                TokenType.WHILE: self.loopWhile,
+                TokenType.RETURN: self.returnLine,
                 }
 
         current_type = self.current_token.t_type
@@ -51,11 +53,56 @@ class Parser:
         if linefun is None:
             msg = "expected one of: "
             for t_type in cases:
-                msg += str(t_type)
-            msg += "got {current_type}."
-            error(msg)
+                msg += f"{str(t_type)}, "
+            msg += f"got {current_type}."
+            self.error(msg)
         else:
             return linefun()
+
+
+    def returnLine(self):
+        # return r = a and b or c + d
+        self.eat(TokenType.RETURN)
+        
+        returnValue = None
+        if self.current_token.t_type != TokenType.SEMICOLON:
+            returnValue = self.assignment()
+
+        self.eat(TokenType.SEMICOLON)
+
+        return ReturnNode(returnValue)
+
+
+    def loopFor(self):
+        self.eat(TokenType.FOR)
+        self.eat(TokenType.LEFT_PAREN)
+
+        decl = None
+        if self.current_token.t_type == TokenType.TYPE:
+            decl = self.declaration()
+        elif self.current_token.t_type == TokenType.IDENTIFIER:
+            decl = self.assignmentLine()
+        
+        condition = self.assignment()
+        self.eat(TokenType.SEMICOLON)
+
+        assign = self.assignment()
+        self.eat(TokenType.RIGHT_PAREN)
+
+        forBlock = self.block()
+
+        return ForNode(decl, condition, assign, forBlock)
+
+
+    def loopWhile(self):
+        self.eat(TokenType.WHILE)
+        self.eat(TokenType.LEFT_PAREN)
+        condition = self.assignment()
+        self.eat(TokenType.RIGHT_PAREN)
+        whileBlock = self.block()
+
+        return WhileNode(condition, whileBlock)
+
 
     def conditional(self):
         self.eat(TokenType.IF)
@@ -70,6 +117,7 @@ class Parser:
 
         return IfNode(condition, ifBlock, elseBlock)
 
+
     def block(self):
         self.eat(TokenType.LEFT_BRACE)
         lineList = []
@@ -78,7 +126,6 @@ class Parser:
         self.eat(TokenType.RIGHT_BRACE)
         
         return BlockNode(lineList) 
-
 
     
     def assignmentLine(self):
@@ -89,35 +136,82 @@ class Parser:
 
 
     def assignment(self):
-        left = self.identifier()
-       
-        op = self.current_token
-        self.eat(TokenType.EQUAL)
-        right = self.orExpr()
+        # a < c = b;
+        _assignment = self.orExpr()
 
-        return BinOpNode(left, right, op)
+        if self.current_token.t_type == TokenType.EQUAL:
+            left = _assignment
+
+            op = self.current_token
+            self.eat(TokenType.EQUAL)
+
+            right = self.assignment() 
+
+            _assignment = BinOpNode(left, right, op)
+
+        return _assignment
 
 
     def declaration(self):
         declType = self.current_token
         self.eat(TokenType.TYPE)
-        if self.current_token.t_type == TokenType.IDENTIFIER:
-            left  = self.current_token
-            self.eat(TokenType.IDENTIFIER)
-            if self.current_token.t_type == TokenType.SEMICOLON:
-                decl = DeclNode(declType, left, None)
-                self.eat(TokenType.SEMICOLON)
-                return decl
+
+        left  = self.current_token
+        self.eat(TokenType.IDENTIFIER)
+
+        right = None
+        if self.current_token.t_type == TokenType.EQUAL:    
             self.eat(TokenType.EQUAL)
-            #if self.current_token.t_type in (TokenType.NUMBER, TokenType.STRING, TokenType.TRUE, TokenType.FALSE, TokenType.NULL):
-            #    right = self.current_token.t_type
-            #    self.eat(right.t_type)
-            #    decl = DeclNode(declType, left, right)
-            #    self.eat(TokenType.SEMICOLON)
-            #    return decl
-            right = self.expr()
-            self.eat(TokenType.SEMICOLON)
-            return DeclNode(declType, left, right)
+            right = self.orExpr()
+
+        # Bool f(Number x) { }
+        # [Bool, Number f = (Number x) { } )
+        elif self.current_token.t_type == TokenType.LEFT_PAREN:
+            declType = [declType]
+            right = self.function(declType)
+              # declType.append(param_type)
+
+        self.eat(TokenType.SEMICOLON)
+
+        return DeclNode(declType, left, right)
+
+
+    def function(self, types = []):
+        self.eat(TokenType.LEFT_PAREN)
+        params = []
+
+        while self.current_token.t_type != TokenType.RIGHT_PAREN:
+            params.append(self.param(types))
+            if self.current_token.t_type == TokenType.COMMA:
+                self.eat(TokenType.COMMA)
+
+        self.eat(TokenType.RIGHT_PAREN)
+        functionBlock = self.block()
+
+        return FunctionNode(params, functionBlock)
+
+
+    def param(self, types):
+        paramType = self.current_token
+        types.append(paramType)
+        self.eat(TokenType.TYPE)
+
+        left  = self.current_token
+        self.eat(TokenType.IDENTIFIER)
+
+        right = None
+        if self.current_token.t_type == TokenType.EQUAL:    
+            self.eat(TokenType.EQUAL)
+            right = self.orExpr()
+
+#        # Bool f(Number x) { }
+#        # [Bool, Number f = (Number x) { } )
+#        elif self.current.token.t_type == TokenType.LEFT_PAREN:
+#            declType = [declType]
+#            right = self.function(declType)
+#              # declType.append(param_type)
+
+        return DeclNode(paramType, left, right)
 
 
     def orExpr(self):
@@ -220,7 +314,7 @@ class Parser:
 
         elif token.t_type == TokenType.LEFT_PAREN:
             self.eat(TokenType.LEFT_PAREN)
-            _factor = self.compExpr()
+            _factor = self.orExpr()
             self.eat(TokenType.RIGHT_PAREN)
 
         return _factor
@@ -250,7 +344,7 @@ class Parser:
     def eat(self, token_type):
         current_type = self.current_token.t_type
         if current_type == token_type:
-            print(self.current_token)
+#            print(self.current_token)
             if self.lexer.has_next_token():
                 self.current_token = self.lexer.get_token()
             else:

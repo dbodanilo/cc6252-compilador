@@ -1,0 +1,6 @@
+for(fruta in fruteira){}
+
+for(Number i in numbers = a + b) {
+  Number j = 2 * i;
+}
+

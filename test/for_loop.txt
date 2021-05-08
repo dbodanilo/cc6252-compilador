@@ -1,0 +1,4 @@
+for(Number i = 0; cond = i > 0 and i < 10; i = i + 1) {
+  Number j = 2 * i;
+}
+

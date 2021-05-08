@@ -1,11 +1,17 @@
-line = declaration 
-     | assigmentLine 
+line = assigmentLine declaration 
+     | 
      | conditional 
      | loopFor 
      | loopWhile ;
 
-declaration = type , ( identifier |  assignment ) , ";" ;
+declaration = type , ( identifier |  assignment | function ) ";" ;
 (* e.g.: Double tri = 1 * 2 / 3; *)
+
+function = "(" [ , param { , "," , param } ] , ")" , block;
+(* Void input(Letter str) { return; } *)
+
+param = type , identifier [ , "=" , value ] ;
+(* Letter str *)
 
 type = letter_upper { , (letter | digit | "_" ) };
 (* [A-Z][a-zA-Z0-9_]* *)
@@ -13,7 +19,31 @@ type = letter_upper { , (letter | digit | "_" ) };
 identifier = letter_lower { , ( letter | digit | "_" ) };
 (*[a-z][a-zA-Z0-9_]**)
 
-assignment = identifier , "=" , ( value | assignment ) ;
+
+expr = assignment 
+     | orExpr ;
+
+assignment = orExpr  [ , "=" , assignment ] ;
+(* a = b = c *)
+(* a = b and c *)
+
+orExpr = andExpr [ , "or" , andExpr ] ;
+
+andExpr = compExpr [ , "and" , compExpr ] ;
+
+compExpr = mathExpr [ , ( "<" | ">" | "<=" | ">=" | "==" ) , mathExpr ] ;
+
+mathExpr = starExpr [ , ( "+" | "-" ) , starExpr ] ;
+
+starExpr = factor [ , ( "*" | "/" ) , factor ] ;
+
+factor = "(" , orExpr , ")"
+       | identifier 
+       | number
+       | string
+       | "false"
+       | "null"
+       | "true"
 
 assignmentLine = assignment , ";" ;
 
@@ -58,14 +88,13 @@ conditional = "if" , "(" , expr , ")" , block [ , "else" , block ]  ;
 
 block = "{" , { line } , "}";
 
-loopFor = "for" , "(" , value , "in" , assignment , ")" , block ;
+
+loopFor = "for" , "(" ,  ( declaration | assignmentLine ) , assignment , ";" , assigment ")" , block ; 
+(* for (Number i = 0; i < 10; i = i + 1) { } *)
+
+(* loopFor = "for" , "(" [ , type ]  , value , "in" , assignment , ")" , block ; *)
 (* for(frutas in fruteira){} *)
 
 loopWhile = "while" , "(" , assignment , ")" , block;
 (* while(x) {} *)
 
-function = type , identifier , "(" [ , param { , "," , param } ] , ")" , block;
-(* Void input(Letter str) { return; } *)
-
-param = type , identifier [ , "=" , value ] ;
-(* Letter str *)

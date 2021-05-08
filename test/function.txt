@@ -1,0 +1,5 @@
+Bool boolFromNumber(Number n) {
+  Bool b = n < 10;
+  return c = b and n > 0;
+};
+

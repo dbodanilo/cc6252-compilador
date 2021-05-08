@@ -56,6 +56,8 @@ class TokenType(Enum):
     LESS_EQUAL = auto()
 
     # regexes
+#    # \{ [^,]+ (, [^,]+ )* \}
+#    ARRAY
     # [a-z][a-zA-Z0-9_]*
     IDENTIFIER = auto()
     # ".*"
@@ -78,6 +80,8 @@ class TokenType(Enum):
     FOR = auto()
     # if
     IF = auto()
+    # in
+    IN = auto()
     # not
     NOT = auto()
     # or
