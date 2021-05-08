@@ -1,3 +1,7 @@
+
+
+
+
 a + b and a - c
 
 a + b < a + b 
@@ -29,6 +33,17 @@ or
   a and b
   c and d
 
+assigmentLine = assignment , ";" ;
 
-or < and < comp < mathExpr (+, -, *, /)
+if(b = a and c) {
+
+} 
+
+Number n = a + c;
+
+Bool b = a or b and c
+
+right = self.orExpr()
+
+assignment < or < and < comp < mathExpr (+, -, *, /) < TERMINAL (IDENTIFIER, NUMBER, STRING, FALSE, TRUE, NULL)
 

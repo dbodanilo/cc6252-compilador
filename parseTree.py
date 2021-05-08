@@ -7,6 +7,7 @@ class IfNode():
     def __str__(self):
         return f'(if ({str(self.condition)}) {self.ifBlock} else {self.elseBlock})'
 
+
 class BlockNode():
     def __init__(self, lines):
         self.lines = lines

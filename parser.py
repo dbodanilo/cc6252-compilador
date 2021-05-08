@@ -60,7 +60,7 @@ class Parser:
     def conditional(self):
         self.eat(TokenType.IF)
         self.eat(TokenType.LEFT_PAREN)
-        condition = self.orExpr()
+        condition = self.assignment()
         self.eat(TokenType.RIGHT_PAREN)
         ifBlock = self.block()
         elseBlock = None
@@ -82,26 +82,20 @@ class Parser:
 
     
     def assignmentLine(self):
-        _line = assignment()
+        _line = self.assignment()
 
         self.eat(TokenType.SEMICOLON)
-        return LineNode(_line)
+        return _line
 
 
     def assignment(self):
-        _assignment = identifier()
-        
-        while self.current_token.t_type == TokenType.EQUAL:
-            left = _assignment
-            op = self.current_token
-            self.eat(TokenType.EQUAL)
-#            if self.current_token.t_type in (TokenType.IDENTIFIER, TokenType.STRING, TokenType.NUMBER):
-            right = self.factor()
-#            else:
-#                right = assignment()
-            _assignment = BinOpNode(left, right, op)
+        left = self.identifier()
+       
+        op = self.current_token
+        self.eat(TokenType.EQUAL)
+        right = self.orExpr()
 
-        return _assignment
+        return BinOpNode(left, right, op)
 
 
     def declaration(self):
@@ -231,8 +225,14 @@ class Parser:
 
         return _factor
 
+    
+    def identifier(self):
+        token = self.current_token
+        self.eat(TokenType.IDENTIFIER)
+        return ValueNode(token, token.name)
 
-    def value():
+
+    def value(self):
         pass
         
 

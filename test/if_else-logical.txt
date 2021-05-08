@@ -1,6 +1,7 @@
-if(a >= b and c < d or b == c) {
+if(d = a >= b and c < d or b == c) {
   Int c = 10;
   String d = "abc";
+  d = d + "def";
 }
 else {
   Number n = 20;
