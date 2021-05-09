@@ -1,31 +1,46 @@
-line = assigmentLine declaration 
-     | 
+line = assigmentLine  
+     | declaration
      | conditional 
      | loopFor 
-     | loopWhile ;
+     | loopWhile
+     | returnLine 
+     
+     | emptyLine ;
 
-declaration = type , ( identifier |  assignment | function ) ";" ;
-(* e.g.: Double tri = 1 * 2 / 3; *)
+assignmentLine = assignment , ";" ;
+(* a = b or c and d *)
 
-function = "(" [ , param { , "," , param } ] , ")" , block;
-(* Void input(Letter str) { return; } *)
+declaration = type , 
+                   ( assignmentLine 
+                   | function 
+                   | identifier , ";" ) ;
+(* Bool b; *) 
+(* Number add1(Number n) { return n + 1; } *)  
+(* Number twoThirds = 1 * 2 / 3; *) 
 
-param = type , identifier [ , "=" , value ] ;
-(* Letter str *)
+conditional = "if" , "(" , assignment , ")" , block [ , "else" , block ]  ;
+(* if (x) { } *) (* if (x) { } else { } *)
 
-type = letter_upper { , (letter | digit | "_" ) };
-(* [A-Z][a-zA-Z0-9_]* *)
+loopFor = "for" , "(" ,  ( declaration | assignmentLine ) , assignment , ";" , assigment ")" , block ; 
+(* for (Number i = 0; i < 10; i = i + 1) { } *)
 
-identifier = letter_lower { , ( letter | digit | "_" ) };
-(*[a-z][a-zA-Z0-9_]**)
+loopWhile = "while" , "(" , assignment , ")" , block;
+(* while(x) {} *)
 
+returnLine = "return" , assignment ;
 
-expr = assignment 
-     | orExpr ;
+emptyLine = ";" ;
 
 assignment = orExpr  [ , "=" , assignment ] ;
-(* a = b = c *)
-(* a = b and c *)
+(* a = b = c and d *)
+
+function = identifier , "(" [ , param { , "," , param } ] , ")" , block;
+(* boolFromNumber(Number n) { return n > 0 and n < 11; } *)
+
+param = type , identifier [ , "=" , value ] ;
+(* Letter str = "a" *)
+
+block = "{" , { line } , "}";
 
 orExpr = andExpr [ , "or" , andExpr ] ;
 
@@ -33,11 +48,14 @@ andExpr = compExpr [ , "and" , compExpr ] ;
 
 compExpr = mathExpr [ , ( "<" | ">" | "<=" | ">=" | "==" ) , mathExpr ] ;
 
-mathExpr = starExpr [ , ( "+" | "-" ) , starExpr ] ;
+sumExpr = mulExpr [ , ( "+" | "-" ) , mulExpr ] ;
 
-starExpr = factor [ , ( "*" | "/" ) , factor ] ;
+mulExpr = value [ , ( "*" | "/" ) , value ] ;
 
-factor = "(" , orExpr , ")"
+negation = ( "not" | "-" ) negation 
+         | value ; 
+
+value = "(" , assignment , ")"
        | identifier 
        | number
        | string
@@ -45,22 +63,20 @@ factor = "(" , orExpr , ")"
        | "null"
        | "true"
 
-assignmentLine = assignment , ";" ;
 
-value = number 
-      | string 
-      | identifier 
-      | "false" 
-      | "null" 
-      | "true" ;
+(** terminals **)
+
+identifier = letter_lower { , ( letter | digit | "_" ) };
+(* [a-z][a-zA-Z0-9_]* *)
+
+type = letter_upper { , (letter | digit | "_" ) };
+(* [A-Z][a-zA-Z0-9_]* *)
 
 number = [ "+" | "-" ] , digit { , digit } [ , "." , digit { , digit } ] ;
 (* [+-]?[0-9]+(\.[0-9]+)? *)
 
 string = '"' ,{ letter | digit | symbol | special | whitespace } ,'"' ";";
 (* ".*" *)
-
-whitespace = " ";
 
 letter = letter_lower | letter_upper;
 
@@ -82,19 +98,21 @@ symbol = "[" | "]" | "{" | "}" | "(" | ")" | "<" | ">"
 
 special = "@" | "#" | "$" | "%";
 
-conditional = "if" , "(" , expr , ")" , block [ , "else" , block ]  ;
-(* if(x) {} *)
-(* if(x) {} else {} *)
-
-block = "{" , { line } , "}";
-
-
-loopFor = "for" , "(" ,  ( declaration | assignmentLine ) , assignment , ";" , assigment ")" , block ; 
-(* for (Number i = 0; i < 10; i = i + 1) { } *)
-
 (* loopFor = "for" , "(" [ , type ]  , value , "in" , assignment , ")" , block ; *)
 (* for(frutas in fruteira){} *)
 
-loopWhile = "while" , "(" , assignment , ")" , block;
-(* while(x) {} *)
+
+(** unused **)
+
+expr = assignment 
+     | orExpr ;
+
+whitespace = " ";
+
+value = number 
+      | string 
+      | identifier 
+      | "false" 
+      | "null" 
+      | "true" ;
 

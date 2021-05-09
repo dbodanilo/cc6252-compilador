@@ -1,4 +1,4 @@
-from tekken import TokenType
+from tekken import TokenType, Token
 from parseTree import *
 
 class Parser:
@@ -26,18 +26,19 @@ class Parser:
         nodeList = []
 #        return self.line()
 #        return self.expr()
-        while self.current_token.t_type != TokenType.EOF and not self.has_error:
-            nodeList.append(self.line())
+        is_eof = False
+        while not self.has_error and not is_eof:
+            current_line = self.line()
+            if current_line is not None:
+                nodeList.append(current_line)
+            else:
+                # EOF is the only cause for None
+                is_eof = True
+
         return BlockNode(nodeList)
     
 
     def line(self):
-        # line = assignmentLine
-        #      | conditional
-        #      | declaration
-        #      | loopFor
-        #      | loopWhile
-        #      | returnLine ;
         cases = {
                 TokenType.IDENTIFIER: self.assignmentLine,
                 TokenType.IF: self.conditional,
@@ -45,19 +46,28 @@ class Parser:
                 TokenType.FOR: self.loopFor,
                 TokenType.WHILE: self.loopWhile,
                 TokenType.RETURN: self.returnLine,
+
+                # a single semicolon
+                TokenType.SEMICOLON: self.emptyLine,
+
+                # EOF
+                TokenType.EOF: lambda: None,
                 }
 
-        current_type = self.current_token.t_type
+        token = self.current_token
 
-        linefun = cases.get(current_type, None)
-        if linefun is None:
-            msg = "expected one of: "
-            for t_type in cases:
-                msg += f"{str(t_type)}, "
-            msg += f"got {current_type}."
-            self.error(msg)
-        else:
+        linefun = cases.get(token.t_type, None)
+        if linefun is not None:
             return linefun()
+        else:
+            self.error(cases.keys())
+
+
+    def emptyLine(self):
+        self.eat(TokenType.SEMICOLON)      
+
+        # move on to next line
+        return self.line()
 
 
     def returnLine(self):
@@ -159,19 +169,20 @@ class Parser:
         left  = self.current_token
         self.eat(TokenType.IDENTIFIER)
 
-        right = None
+        right = ValueNode(None)
         if self.current_token.t_type == TokenType.EQUAL:    
             self.eat(TokenType.EQUAL)
-            right = self.orExpr()
-
+            right = self.assignmentLine()
         # Bool f(Number x) { }
-        # [Bool, Number f = (Number x) { } )
+        # [Bool, Number] f = (Number x) { } )
         elif self.current_token.t_type == TokenType.LEFT_PAREN:
+            # type of a function is a list of 
+            # its return type and the types of its parameters
             declType = [declType]
             right = self.function(declType)
-              # declType.append(param_type)
-
-        self.eat(TokenType.SEMICOLON)
+        else:
+            # only a declaration, no assignment or function
+            self.eat(TokenType.SEMICOLON)
 
         return DeclNode(declType, left, right)
 
@@ -199,7 +210,7 @@ class Parser:
         left  = self.current_token
         self.eat(TokenType.IDENTIFIER)
 
-        right = None
+        right = ValueNode(None)
         if self.current_token.t_type == TokenType.EQUAL:    
             self.eat(TokenType.EQUAL)
             right = self.orExpr()
@@ -272,29 +283,51 @@ class Parser:
 
 
     def term(self):
-        _term = self.factor() # ValueNode(10)
+        _term = self.negation() # ValueNode(10)
 
         while self.current_token.t_type in (TokenType.STAR, TokenType.SLASH):
             left = _term
             op = self.current_token
             self.eat(op.t_type)
-            right = self.factor()
+            right = self.negation()
             _term = BinOpNode(left, right, op)
 
         return _term
+
+    def negation(self):
+        if self.current_token.t_type in (TokenType.NOT, TokenType.MINUS):
+            op = self.current_token
+            self.eat(op.t_type)
+            value = self.negation()
+            return NegationNode(op, value)
+        
+        return self.factor()
 
 
     def factor(self):
         token = self.current_token
         _factor = None
 
-        if token.t_type == TokenType.IDENTIFIER:
+        if token.t_type == TokenType.LEFT_PAREN:
+            self.eat(TokenType.LEFT_PAREN)
+            _factor = self.assignment()
+            self.eat(TokenType.RIGHT_PAREN)
+
+        elif token.t_type == TokenType.IDENTIFIER:
             self.eat(TokenType.IDENTIFIER)
             _factor = ValueNode(token, token.name)
 
         elif token.t_type == TokenType.NUMBER:
             self.eat(TokenType.NUMBER)
             _factor = ValueNode(token, token.name)
+
+        elif token.t_type == TokenType.STRING:
+            self.eat(TokenType.STRING)
+            _factor = ValueNode(token, token.name)
+
+        elif token.t_type == TokenType.FALSE:
+            self.eat(TokenType.FALSE)
+            _factor = ValueNode(token, False)
 
         elif token.t_type == TokenType.NULL:
             self.eat(TokenType.NULL)
@@ -304,18 +337,18 @@ class Parser:
             self.eat(TokenType.TRUE)
             _factor = ValueNode(token, True)
 
-        elif token.t_type == TokenType.FALSE:
-            self.eat(TokenType.FALSE)
-            _factor = ValueNode(token, False)
-
-        elif token.t_type == TokenType.STRING:
-            self.eat(TokenType.STRING)
-            _factor = ValueNode(token, token.name)
-
-        elif token.t_type == TokenType.LEFT_PAREN:
-            self.eat(TokenType.LEFT_PAREN)
-            _factor = self.orExpr()
-            self.eat(TokenType.RIGHT_PAREN)
+        else:
+            _factor = ErrorNode(token)
+            expected = [
+                    TokenType.LEFT_PAREN,
+                    TokenType.IDENTIFIER,
+                    TokenType.NUMBER,
+                    TokenType.STRING,
+                    TokenType.FALSE,
+                    TokenType.NULL,
+                    TokenType.TRUE,
+            ]
+            self.error(expected)
 
         return _factor
 
@@ -330,25 +363,34 @@ class Parser:
         pass
         
 
-    def error(self, msg = ""):
+    def error(self, types):
         self.has_error = True
-        # end="" avoids new line in case of detailed message
-        print("Invalid Syntax", end="")
-        if len(msg) > 0:
-            print(f": {msg}")
+
+        token = self.current_token
+
+        msg = f"Line {token.line}, Invalid Syntax: expected "
+        # more than one expected option
+        if len(types) > 1:
+            msg += "one of "
+            for t in types:
+                msg += f"{str(t)}, "
         else:
-            # in case there's no message, print a new line
-            print("")
+            msg += f"{str(types[0])}, "
+        msg += f"got {token.t_type}"
+
+        print(msg)
 
 
     def eat(self, token_type):
         current_type = self.current_token.t_type
         if current_type == token_type:
 #            print(self.current_token)
-            if self.lexer.has_next_token():
+            if self.lexer.has_next_token() and not self.has_error:
                 self.current_token = self.lexer.get_token()
+            # not EOF, as it's always the Lexer's last token
             else:
-                self.current_token = None
+                current_line = self.current_token.line
+                self.current_token = Token(current_line, "ERROR", TokenType.ERROR)
         else:
-            self.error(f"expected {token_type}, got {current_type}")
+            self.error([token_type])
 

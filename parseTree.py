@@ -1,3 +1,12 @@
+class ErrorNode():
+    def __init__(self, token, msg = "ERROR"):
+        self.token = token
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
+
+
 class IfNode():
     def __init__(self, condition, ifBlock, elseBlock):
         self.condition = condition
@@ -21,13 +30,28 @@ class BlockNode():
         return return_string
 
 
+class NegationNode():
+    def __init__(self, op, value):
+        self.op = op
+        self.value = value
+
+    def __str__(self):
+        return f"({self.op.name} {str(self.value)})" 
+
+
 class ValueNode():
     def __init__(self, token, value = None):
         self.token = token
         self.value = value
 
     def __str__(self):
-        return str(self.value)
+        str_vals = {
+                None: "null", 
+                False: "false",
+                True: "true",
+        }
+        
+        return str_vals.get(self.value, str(self.value))
 
 
 class BinOpNode():

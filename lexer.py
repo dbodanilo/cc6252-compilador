@@ -20,44 +20,6 @@ class Lexer:
         self.nextIndex = 0
         self.line = 1
 
-        self.cases = {
-            '(': lambda: self.push_token(TokenType.LEFT_PAREN, '('),
-            ')': lambda: self.push_token(TokenType.RIGHT_PAREN, ')'),
-            '{': lambda: self.push_token(TokenType.LEFT_BRACE, '{'),
-            '}': lambda: self.push_token(TokenType.RIGHT_BRACE, '}'),
-            ',': lambda: self.push_token(TokenType.COMMA, ','),
-            '.': lambda: self.push_token(TokenType.DOT, '.'),
-            '-': lambda: self.push_token(TokenType.MINUS, '-'),
-            '+': lambda: self.push_token(TokenType.PLUS, '+'),
-            ';': lambda: self.push_token(TokenType.SEMICOLON, ';'),
-            '*': lambda: self.push_token(TokenType.STAR, '*'),
-            '?': lambda: self.push_token(TokenType.QUESTION, '?'),
-            ':': lambda: self.push_token(TokenType.COLON, ':'),
-                
-            '/': lambda: self.push_token(TokenType.NOT_EQUAL, '/=') if self.is_next_char("=") else self.push_token(TokenType.SLASH, '/'),
-            '=': lambda: self.push_token(TokenType.EQUAL_EQUAL, '==') if self.is_next_char("=") else self.push_token(TokenType.EQUAL, '='),
-            '>': lambda: self.push_token(TokenType.GREATER_EQUAL, '>=') if self.is_next_char("=") else self.push_token(TokenType.GREATER, '>'),
-            '<': lambda: self.push_token(TokenType.LESS_EQUAL, '<=') if self.is_next_char("=") else self.push_token(TokenType.LESS, '<'), 
-
-            # ignore whitespace
-            # todo: handle comments 
-            ' ': lambda: self.switch_char()() if self.has_next_char() else self.push_token(TokenType.EOF, "EOF"),
-            '\t': lambda: self.switch_char()() if self.has_next_char() else self.push_token(TokenType.EOF, "EOF"),
-            '\n': lambda: self.next_line()() if self.has_next_char() else self.push_token(TokenType.EOF, "EOF"),
-            '"': lambda: self.push_string('"'),
-            "'": lambda: self.push_string("'"),
-        }
-        
-        # python excludes end in (start, end)
-        for c_num in range(ord('0'), ord('9') + 1):
-            self.cases[chr(c_num)] = lambda: self.push_number()
-
-        for c_lower in range(ord('a'), ord('z') + 1):
-            self.cases[chr(c_lower)] = lambda: self.push_char(TokenType.IDENTIFIER)
-
-        for c_upper in range(ord('A'), ord('Z') + 1):
-            self.cases[chr(c_upper)] = lambda: self.push_char(TokenType.TYPE)
-
         self.reserved = {
             # keywords
             "and": TokenType.AND,
@@ -78,10 +40,105 @@ class Lexer:
             "true": TokenType.TRUE,
         }        
 
+        self.cases = {
+            '(': lambda: self.push_token(TokenType.LEFT_PAREN, '('),
+            ')': lambda: self.push_token(TokenType.RIGHT_PAREN, ')'),
+            '{': lambda: self.push_token(TokenType.LEFT_BRACE, '{'),
+            '}': lambda: self.push_token(TokenType.RIGHT_BRACE, '}'),
+            ',': lambda: self.push_token(TokenType.COMMA, ','),
+            '.': lambda: self.push_token(TokenType.DOT, '.'),
+
+            # handle comments "--"
+            '-': self.push_minus,
+            '+': lambda: self.push_token(TokenType.PLUS, '+'),
+            ';': lambda: self.push_token(TokenType.SEMICOLON, ';'),
+            '*': lambda: self.push_token(TokenType.STAR, '*'),
+            '?': lambda: self.push_token(TokenType.QUESTION, '?'),
+            ':': lambda: self.push_token(TokenType.COLON, ':'),
+                
+            '/': self.push_slash,
+            '=': self.push_equal,
+            '>': self.push_greater,
+            '<': self.push_less, 
+
+            # ignore whitespace
+            # todo: handle comments 
+            '\n': self.push_line,
+            '\r': self.push_space,
+            '\t': self.push_space,
+            ' ':  self.push_space,
+            '"': lambda: self.push_string('"'),
+            "'": lambda: self.push_string("'"),
+        }
+        
+        # python excludes end in range(start, end)
+        for c_num in range(ord('0'), ord('9') + 1):
+            self.cases[chr(c_num)] = self.push_number
+
+        for c_lower in range(ord('a'), ord('z') + 1):
+            self.cases[chr(c_lower)] = lambda: self.push_char(TokenType.IDENTIFIER)
+
+        for c_upper in range(ord('A'), ord('Z') + 1):
+            self.cases[chr(c_upper)] = lambda: self.push_char(TokenType.TYPE)
+
+
+    def push_line(self):
+        self.line += 1
+        return self.push_space()
+
+
+    def push_space(self):
+        if self.has_next_char():
+            return self.switch_char()()
+        else: 
+            return self.push_token(TokenType.EOF, "EOF")
+
+
+    def push_slash(self):
+        if self.is_next_char("="):
+            return self.push_token(TokenType.NOT_EQUAL, '/=')  
+        else: 
+            return self.push_token(TokenType.SLASH, '/')
+
+
+    def push_minus(self):
+        if self.is_next_char("-"):
+            return self.push_comment()  
+        else: 
+            return self.push_token(TokenType.MINUS, '-')
+
+
+    def push_less(self):
+        if self.is_next_char("="):
+            return self.push_token(TokenType.LESS_EQUAL, '<=')  
+        else: 
+            return self.push_token(TokenType.LESS, '<')
+
+
+    def push_greater(self):
+        if self.is_next_char("="):
+            return self.push_token(TokenType.GREATER_EQUAL, '>=')  
+        else: 
+            return self.push_token(TokenType.GREATER, '>')
+
+
+    def push_equal(self):
+        if self.is_next_char("="):
+            return self.push_token(TokenType.EQUAL_EQUAL, '==')  
+        else: 
+            return self.push_token(TokenType.EQUAL, '=')
+
+
+    def push_comment(self):
+        while self.peek_char() != '\n':
+            self.advance_char()
+
+        return self.push_line()
+
 
     def push_char(self, tk_type):
         idx_start = self.nextIndex - 1
-        while self.has_next_char() and self.peek_char().isalpha():
+        while self.has_next_char() and (self.peek_char().isalpha() or self.peek_char() == "_"):
             self.advance_char()
         idx_end = self.nextIndex
 
@@ -111,7 +168,7 @@ class Lexer:
         while self.has_next_char() and self.peek_char() != delim:
             self.advance_char()
         if not self.has_next_char():
-            return self.erro('String nao terminada')
+            return self.error()('Unterminated String')
         # get second delim
         self.advance_char()
         idx_end = self.nextIndex
@@ -121,9 +178,11 @@ class Lexer:
     def push_token(self, tokenType, tokenChar):
         newToken = Token(self.line, tokenChar, tokenType)
         self.tokens.append(newToken)
-        if tokenType == TokenType.TYPE or tokenType == TokenType.IDENTIFIER:
+
+        if tokenType in (TokenType.TYPE, TokenType.IDENTIFIER):
             sym = Symbol(newToken)
             self.symbolTable.insert(tokenChar, sym) 
+
         return newToken
 
 
@@ -190,23 +249,34 @@ class Lexer:
 
 
     def switch_char(self):
-        return self.cases.get(self.next_char(), self.erro)
+        if self.has_next_char():
+            current_char = self.next_char()
+            return self.cases.get(current_char, self.error(current_char))
+        
+        return lambda: self.push_token(TokenType.EOF, "EOF")
 
 
     def get_current_char(self):
+        # doesn't make sense, 
+        # as current, not next char is to be returned
 #        if self.has_next_char():
-        return self.code[self.nextIndex - 1]
-#        return 'EOF'
+        if self.nextIndex > 0:
+            return self.code[self.nextIndex - 1]
+
+        # empty file
+        return 'EOF'
 
 
-    def erro(self, msg = 'Caractere nao reconhecido'):
-        c_char = 'EOF'
-        if self.has_next_char():
-            c_char = self.get_current_char()
-           
-        print(f'Linha {self.line} - {msg}: {c_char}')
-        tokenError = Token(self.line, c_char, TokenType.ERROR)
-        return tokenError
+    def error(self, c_char = 'EOF'):
+
+        def log_error(msg = "Unrecognized Character"):
+            print(f"Line {self.line}, Invalid Input: {msg} \'{c_char}\'")
+#            tokenError = Token(self.line, c_char, TokenType.ERROR)
+            # treat unrecognized char as whitespace
+            return self.push_space()
+
+        return log_error
+
 
     def has_next_token(self):
         return self.has_next_char()    
@@ -215,13 +285,7 @@ class Lexer:
     def get_token(self):
         tk_fun = self.switch_char()
 
-#        token = tk_fun if tk_fun is None else tk_fun()
         token = tk_fun()
 
-        # whitespace
-        #if Token is None:
-        #    token = self.get_token()
-
         return token
-
 
