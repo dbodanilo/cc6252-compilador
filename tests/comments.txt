@@ -1,0 +1,63 @@
+-- Matheus
+-- Markel
+-- Danilo
+-- Kaike
+
+for (Number i = 0; i < 10; i = i + 1) { } 
+
+Bool b = ((a >= b) and (c < d)) or (b == c);
+Bool f = false;
+Bool t = true;
+
+-- Parser comments --
+Parser parser(Parser self, Lexer lexer) {
+-- parse function calls as has_next_token()
+    while(has_next_token){
+        -- trata Token
+    }
+}
+
+Int a = 2;
+
+Int a = 10;
+
+Symbol symbol(Token tk, Type t) { }
+
+
+-- function call
+-- token("a", "IDENTIFIER")
+
+-- Tipos de declaração
+-- C
+Int a = 10;
+
+
+-- tipos de função
+-- C 
+Int f(Int a) {
+  return a + 1;
+}
+
+Tokens lexer(String codigo_fonte) { }
+
+Int abc;
+
+-- function call
+-- plus(type, valor, valor)
+
+Int a = 10;
+
+-- function call
+-- parse(TokenType.IDENTIFIER, "a", )
+
+
+Void lexer() {
+  Int minhaVariavel;
+
+  -- function/ class calls
+  -- token("minhaVariavel", TokenType.IDENTIFIER)
+  -- token("(", TokenType.LEFT_PAREN)
+}
+
+-- parse(TokenType.IF, "if");
+-- plus(int, 10, 20);

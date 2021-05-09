@@ -1,3 +1,14 @@
+if (false) {
+  -- this will never run
+}
+
+if (a) {
+	Number a = 10;
+}
+else {
+	Number a = 20;
+}
+
 if(d = a >= b and c < d or b == c) {
   Int c = 10;
   String d = "abc";

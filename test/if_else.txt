@@ -1,6 +1,0 @@
-if (a) {
-	Number a = 10;
-}
-else {
-	Number a = 20;
-}

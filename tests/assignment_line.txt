@@ -1,0 +1,16 @@
+Bool andMathExpr = a + b and a - c;
+
+Bool compExpr = a + a1 < b and c < d;
+
+Bool logicalExpr = a or b and c;
+
+Number mathExpr = a + b * c;
+
+if(b = a and c) {
+
+} 
+
+Number n = a + c;
+
+Bool b = a or b and c
+
