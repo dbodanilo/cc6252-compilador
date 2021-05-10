@@ -31,6 +31,7 @@ returnLine = "return" , assignment ;
 
 emptyLine = ";" ;
 
+
 assignment = orExpr  [ , "=" , assignment ] ;
 (* a = b = c and d *)
 
@@ -42,20 +43,21 @@ param = type , identifier [ , "=" , value ] ;
 
 block = "{" , { line } , "}";
 
+
 orExpr = andExpr [ , "or" , andExpr ] ;
 
 andExpr = compExpr [ , "and" , compExpr ] ;
 
-compExpr = mathExpr [ , ( "<" | ">" | "<=" | ">=" | "==" ) , mathExpr ] ;
+compExpr = expr [ , ( "<" | ">" | "<=" | ">=" | "==" ) , expr ] ;
 
-sumExpr = mulExpr [ , ( "+" | "-" ) , mulExpr ] ;
+expr = term [ , ( "+" | "-" ) , term ] ;
 
-mulExpr = value [ , ( "*" | "/" ) , value ] ;
+term = negation [ , ( "*" | "/" ) , negation ] ;
 
 negation = ( "not" | "-" ) negation 
-         | value ; 
+         | factor ; 
 
-value = "(" , assignment , ")"
+factor = "(" , assignment , ")"
        | identifier 
        | number
        | string
@@ -72,11 +74,13 @@ identifier = letter_lower { , ( letter | digit | "_" ) };
 type = letter_upper { , (letter | digit | "_" ) };
 (* [A-Z][a-zA-Z0-9_]* *)
 
-number = [ "+" | "-" ] , digit { , digit } [ , "." , digit { , digit } ] ;
-(* [+-]?[0-9]+(\.[0-9]+)? *)
+(* +10 invalid *)
+number = [ "-" ] , digit { , digit } [ , "." , digit { , digit } ] ;
+(* -?[0-9]+(\.[0-9]+)? *)
 
 string = '"' ,{ letter | digit | symbol | special | whitespace } ,'"' ";";
 (* ".*" *)
+
 
 letter = letter_lower | letter_upper;
 
@@ -98,11 +102,11 @@ symbol = "[" | "]" | "{" | "}" | "(" | ")" | "<" | ">"
 
 special = "@" | "#" | "$" | "%";
 
-(* loopFor = "for" , "(" [ , type ]  , value , "in" , assignment , ")" , block ; *)
-(* for(frutas in fruteira){} *)
-
 
 (** unused **)
+
+loopFor = "for" , "(" [ , type ]  , value , "in" , assignment , ")" , block ;
+(* for(frutas in fruteira){} *)
 
 expr = assignment 
      | orExpr ;
