@@ -1,3 +1,7 @@
+
+(* until end of line *)
+comment = "--" , text ;
+
 line = assigmentLine  
      | declaration
      | conditional 
