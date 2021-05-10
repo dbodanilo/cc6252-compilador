@@ -12,5 +12,5 @@ if(b = a and c) {
 
 Number n = a + c;
 
-Bool b = a or b and c
+Bool b = a or b and c;
 

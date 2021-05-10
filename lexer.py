@@ -138,8 +138,11 @@ class Lexer:
 
     def push_char(self, tk_type):
         idx_start = self.nextIndex - 1
-        while self.has_next_char() and (self.peek_char().isalpha() or self.peek_char() == "_"):
+        c = self.peek_char()
+        while self.has_next_char() and (c.isalnum() or c == "_"):
             self.advance_char()
+            c = self.peek_char()
+
         idx_end = self.nextIndex
 
         word = self.code[idx_start:idx_end] 
