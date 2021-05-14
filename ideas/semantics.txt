@@ -1,0 +1,41 @@
+2021-05-11
+  - checagem de tipos durante operações aritméticas da linguagem
+  - verificação de declaração de variáveis
+
+-- idea
+-- on Node return (Parser):
+--     checker.getType(node)
+--     -- or
+--     checker.check(node)
+
+-- Checker(self, parseTree, symbolTable)
+
+
+-- assignment of a value to 
+-- a variable of different type
+Number n = "string";
+
+-- undeclared b
+if (b) {
+}
+
+Number x = 0;
+Number y = 10;
+
+-- division by zero
+Number z = y/x;
+
+-- x already declared in this scope
+Number x;
+
+-- if we implement vectors
+Number xs = [1, 2, 3]
+-- out of range
+x5 = xs[5]
+
+Type1 o1;
+Type2 o2;
+
+-- comparison of different types of variables
+o1 == o2;
+
