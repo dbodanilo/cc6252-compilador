@@ -1,3 +1,13 @@
+from enum import Enum, auto
+
+class NodeType(Enum):
+    BOOL = auto()
+    NUMBER = auto()
+    STRING = auto()
+    FUNCTION = auto()
+    OBJECT = auto()
+    ERROR = auto()
+
 class ErrorNode():
     def __init__(self, token, msg = "ERROR"):
         self.token = token
@@ -31,18 +41,20 @@ class BlockNode():
 
 
 class NegationNode():
-    def __init__(self, op, value):
+    def __init__(self, op, value, nodeType):
         self.op = op
         self.value = value
+        self.nodeType = nodeType
 
     def __str__(self):
         return f"({self.op.name} {str(self.value)})" 
 
 
 class ValueNode():
-    def __init__(self, token, value = None):
+    def __init__(self, token, value = None, nodeType = None):
         self.token = token
         self.value = value
+        self.nodeType = nodeType
 
     def __str__(self):
         str_vals = {
@@ -55,10 +67,11 @@ class ValueNode():
 
 
 class BinOpNode():
-    def __init__(self, left, right, op):
+    def __init__(self, left, right, op, nodeType):
         self.left = left
         self.right = right
         self.op = op
+        self.nodeType = nodeType
 
     def __str__(self):
         return f"({str(self.left)} {self.op.name} {str(self.right)})"

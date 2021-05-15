@@ -233,7 +233,8 @@ class Parser:
             op = self.current_token
             self.eat(TokenType.OR)
             right = self.andExpr()
-            _or = BinOpNode(left, right, op)
+            n_type = self.compType(left.nodeType, right.nodeType)
+            _or = BinOpNode(left, right, op, n_type)
 
         return _or
 
@@ -246,7 +247,8 @@ class Parser:
             op = self.current_token
             self.eat(TokenType.AND)
             right = self.compExpr()
-            _and = BinOpNode(left, right, op)
+            n_type = compType(left.nodeType, right.nodeType)
+            _and = BinOpNode(left, right, op, n_type)
 
         return _and
 
@@ -259,7 +261,8 @@ class Parser:
             op = self.current_token
             self.eat(op.t_type)
             right = self.expr()
-            _comp = BinOpNode(left, right, op)
+            n_type = self.compType(left.nodeType, right.nodeType)
+            _comp = BinOpNode(left, right, op, n_type)
 
         return _comp
 
@@ -277,7 +280,8 @@ class Parser:
             op = self.current_token
             self.eat(op.t_type)
             right = self.term()
-            _expr = BinOpNode(left, right, op)
+            n_type = self.compType(left.nodeType, right.nodeType)
+            _expr = BinOpNode(left, right, op, n_type)
 
         return _expr
 
@@ -290,16 +294,24 @@ class Parser:
             op = self.current_token
             self.eat(op.t_type)
             right = self.negation()
-            _term = BinOpNode(left, right, op)
+            n_type = self.compType(left.nodeType, right.nodeType)
+            _term = BinOpNode(left, right, op, n_type)
 
         return _term
+
+    def compType(self, left, right):
+        if left == right:
+            return left
+        self.error([left], "Incompatible Type")
+        return NodeType.ERROR
+
 
     def negation(self):
         if self.current_token.t_type in (TokenType.NOT, TokenType.MINUS):
             op = self.current_token
             self.eat(op.t_type)
             value = self.negation()
-            return NegationNode(op, value)
+            return NegationNode(op, value, value.nodeType)
         
         return self.factor()
 
@@ -319,23 +331,23 @@ class Parser:
 
         elif token.t_type == TokenType.NUMBER:
             self.eat(TokenType.NUMBER)
-            _factor = ValueNode(token, token.name)
+            _factor = ValueNode(token, token.name, NodeType.NUMBER)
 
         elif token.t_type == TokenType.STRING:
             self.eat(TokenType.STRING)
-            _factor = ValueNode(token, token.name)
+            _factor = ValueNode(token, token.name, NodeType.STRING)
 
         elif token.t_type == TokenType.FALSE:
             self.eat(TokenType.FALSE)
-            _factor = ValueNode(token, False)
+            _factor = ValueNode(token, False, NodeType.BOOL)
 
         elif token.t_type == TokenType.NULL:
             self.eat(TokenType.NULL)
-            _factor = ValueNode(token, None)
+            _factor = ValueNode(token, None, NodeType.OBJECT)
         
         elif token.t_type == TokenType.TRUE:
             self.eat(TokenType.TRUE)
-            _factor = ValueNode(token, True)
+            _factor = ValueNode(token, True, NodeType.BOOL)
 
         else:
             _factor = ErrorNode(token)
@@ -358,17 +370,21 @@ class Parser:
         self.eat(TokenType.IDENTIFIER)
         return ValueNode(token, token.name)
 
+    def type(self):
+        token = self.current_token
+        self.eat(TokenType.TYPE)
+        return ValueNode(token, token.name)
 
     def value(self):
         pass
         
 
-    def error(self, types):
+    def error(self, types, errMsg="Invalid Syntax"):
         self.has_error = True
 
         token = self.current_token
 
-        msg = f"Line {token.line}, Invalid Syntax: expected "
+        msg = f"Line {token.line}, {errMsg}: expected "
         # more than one expected option
         if len(types) > 1:
             msg += "one of "
