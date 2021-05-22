@@ -52,8 +52,8 @@ class SymbolTable():
         return sym
 
 
-    def lookup(self, name):
-        return self.table[name]
+    def lookup(self, name, default = None):
+        return self.table.get(name, default)
 
     def __str__(self):
         str_table = "{\n"

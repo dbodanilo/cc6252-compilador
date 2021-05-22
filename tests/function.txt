@@ -3,3 +3,10 @@ Bool boolFromNumber(Number n) {
   return c = b and n > 0;
 };
 
+Number old;
+
+Bool cmp(Number current = old = 10, Number x = 30)
+{
+  return current < x;
+}
+

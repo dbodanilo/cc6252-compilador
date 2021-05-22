@@ -1,0 +1,6 @@
+-- no comma between parameters
+Number add(Number x = 10 Number y)
+{
+  return x + y;
+}
+

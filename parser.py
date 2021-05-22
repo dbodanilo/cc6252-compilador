@@ -1,41 +1,38 @@
 from tekken import TokenType, Token
+from symbol import Symbol
 from parseTree import *
+
 
 class Parser:
     def __init__(self, lexer, symbolTable):
         self.lexer = lexer
+        self.symbolTable = symbolTable
         self.current_token = self.lexer.get_token()
 #        print(self.current_token)
-        self.symbolTable = symbolTable
         self.has_error = False
+        self.tokens = []
 
 
-    def get_tokens(lexer):
-        tokens = []
-    
-        # consumia primeiro token 
-        # sem inserir na lista
-    #    token = lexer.get_token()
-        while(lexer.has_next_token()):
-            token = lexer.get_token()
-            tokens.append(token)
-        return tokens
+    def get_tokens(self):    
+        for token in iter(self.lexer):
+            self.tokens.append(token)
+
+        return self.tokens
 
 
     def parse(self):
-        nodeList = []
-#        return self.line()
-#        return self.expr()
-        is_eof = False
-        while not self.has_error and not is_eof:
+        lines = []
+
+        while not self.has_error:
             current_line = self.line()
+
             if current_line is not None:
-                nodeList.append(current_line)
+                lines.append(current_line)
             else:
                 # EOF is the only cause for None
-                is_eof = True
+                break
 
-        return BlockNode(nodeList)
+        return BlockNode(lines)
     
 
     def line(self):
@@ -59,8 +56,8 @@ class Parser:
         linefun = cases.get(token.t_type, None)
         if linefun is not None:
             return linefun()
-        else:
-            self.error(cases.keys())
+
+        self.error(cases.keys())
 
 
     def emptyLine(self):
@@ -74,7 +71,7 @@ class Parser:
         # return r = a and b or c + d
         self.eat(TokenType.RETURN)
         
-        returnValue = None
+        returnValue = ValueNode(None)
         if self.current_token.t_type != TokenType.SEMICOLON:
             returnValue = self.assignment()
 
@@ -116,10 +113,13 @@ class Parser:
 
     def conditional(self):
         self.eat(TokenType.IF)
+
         self.eat(TokenType.LEFT_PAREN)
         condition = self.assignment()
         self.eat(TokenType.RIGHT_PAREN)
+
         ifBlock = self.block()
+
         elseBlock = None
         if self.current_token.t_type == TokenType.ELSE:
             self.eat(TokenType.ELSE)
@@ -163,58 +163,59 @@ class Parser:
 
 
     def declaration(self):
-        declType = self.current_token
-        self.eat(TokenType.TYPE)
-
-        left  = self.current_token
-        self.eat(TokenType.IDENTIFIER)
-
+        declType = self.type()
+        left  = self.identifier(declType.nodeType)
         right = ValueNode(None)
+
+        # type identifier = assignment ;
         if self.current_token.t_type == TokenType.EQUAL:    
             self.eat(TokenType.EQUAL)
+
+            # assigmentLine = assignment ;
             right = self.assignmentLine()
-        # Bool f(Number x) { }
-        # [Bool, Number] f = (Number x) { } )
+        
+        # type identifier (params) block
         elif self.current_token.t_type == TokenType.LEFT_PAREN:
-            # type of a function is a list of 
-            # its return type and the types of its parameters
-            declType = [declType]
-            right = self.function(declType)
+            paramTypes = []
+            right = self.function(declType, paramTypes)
+            declType = FunctionTypeNode(declType, paramTypes)
+
+        # type identifier ;
         else:
-            # only a declaration, no assignment or function
             self.eat(TokenType.SEMICOLON)
 
         return DeclNode(declType, left, right)
 
 
-    def function(self, types = []):
+    def function(self, returnType, paramTypes):
         self.eat(TokenType.LEFT_PAREN)
         params = []
 
-        while self.current_token.t_type != TokenType.RIGHT_PAREN:
-            params.append(self.param(types))
-            if self.current_token.t_type == TokenType.COMMA:
+        while self.current_token.t_type != TokenType.RIGHT_PAREN and not self.has_error:
+            params.append(self.param(paramTypes))
+
+            if self.current_token.t_type != TokenType.RIGHT_PAREN:
                 self.eat(TokenType.COMMA)
 
         self.eat(TokenType.RIGHT_PAREN)
         functionBlock = self.block()
 
-        return FunctionNode(params, functionBlock)
+        return FunctionNode(returnType, params, functionBlock)
 
 
-    def param(self, types):
-        paramType = self.current_token
-        types.append(paramType)
-        self.eat(TokenType.TYPE)
+    def param(self, paramTypes):
+        paramType = self.type()
+        paramTypes.append(paramType)
 
-        left  = self.current_token
-        self.eat(TokenType.IDENTIFIER)
-
+        left  = self.identifier()
         right = ValueNode(None)
+
+        # type identifier = assignment
         if self.current_token.t_type == TokenType.EQUAL:    
             self.eat(TokenType.EQUAL)
-            right = self.orExpr()
+            right = self.assignment()
 
+# função dentro de parâmetro
 #        # Bool f(Number x) { }
 #        # [Bool, Number f = (Number x) { } )
 #        elif self.current.token.t_type == TokenType.LEFT_PAREN:
@@ -247,7 +248,7 @@ class Parser:
             op = self.current_token
             self.eat(TokenType.AND)
             right = self.compExpr()
-            n_type = compType(left.nodeType, right.nodeType)
+            n_type = self.compType(left.nodeType, right.nodeType)
             _and = BinOpNode(left, right, op, n_type)
 
         return _and
@@ -307,18 +308,22 @@ class Parser:
 
 
     def negation(self):
+        _negation = None
         if self.current_token.t_type in (TokenType.NOT, TokenType.MINUS):
             op = self.current_token
             self.eat(op.t_type)
             value = self.negation()
-            return NegationNode(op, value, value.nodeType)
+
+            _negation = NegationNode(op, value)
+        else:
+            _negation = self.factor()
         
-        return self.factor()
+        return _negation
 
 
     def factor(self):
-        token = self.current_token
         _factor = None
+        token = self.current_token
 
         if token.t_type == TokenType.LEFT_PAREN:
             self.eat(TokenType.LEFT_PAREN)
@@ -350,7 +355,7 @@ class Parser:
             _factor = ValueNode(token, True, NodeType.BOOL)
 
         else:
-            _factor = ErrorNode(token)
+#            _factor = ErrorNode(token)
             expected = [
                     TokenType.LEFT_PAREN,
                     TokenType.IDENTIFIER,
@@ -364,37 +369,58 @@ class Parser:
 
         return _factor
 
-    
-    def identifier(self):
-        token = self.current_token
-        self.eat(TokenType.IDENTIFIER)
-        return ValueNode(token, token.name)
+    def nodeTypeFromToken(self, token):
+        cases = {
+           "Bool": NodeType.BOOL, 
+           "Number": NodeType.NUMBER, 
+           "String": NodeType.STRING, 
+        }
 
+        return cases.get(token.name, NodeType.OBJECT)
+
+    
     def type(self):
         token = self.current_token
         self.eat(TokenType.TYPE)
+
+        nodeType = self.nodeTypeFromToken(token)
+
+        return ValueNode(token, token.name, nodeType)
+
+
+    def identifier(self, nodeType = None):
+        token = self.current_token
+        self.eat(TokenType.IDENTIFIER)
+        declared = nodeType is not None
+        # get nodeType from symbolTable
+        #symbol = self.symbolTable.lookup(token.name, Symbol(token, nodeType, declared 
+
         return ValueNode(token, token.name)
+
 
     def value(self):
         pass
         
 
     def error(self, types, errMsg="Invalid Syntax"):
-        self.has_error = True
+        if not self.has_error:
+             self.has_error = True
 
-        token = self.current_token
+             token = self.current_token
 
-        msg = f"Line {token.line}, {errMsg}: expected "
-        # more than one expected option
-        if len(types) > 1:
-            msg += "one of "
-            for t in types:
-                msg += f"{str(t)}, "
-        else:
-            msg += f"{str(types[0])}, "
-        msg += f"got {token.t_type}"
+             msg = f"Line {token.line}, {errMsg}: expected "
+             # more than one expected option
+             if len(types) > 1:
+                 msg += "one of "
+                 for t in types:
+                     msg += f"{str(t)}, "
+             else:
+                 msg += f"{str(types[0])}, "
+             msg += f"got {token.t_type}"
 
-        print(msg)
+             print(msg)
+
+             self.current_token = Token(token.line, "ERROR", TokenType.ERROR)
 
 
     def eat(self, token_type):
@@ -403,10 +429,10 @@ class Parser:
 #            print(self.current_token)
             if self.lexer.has_next_token() and not self.has_error:
                 self.current_token = self.lexer.get_token()
-            # not EOF, as it's always the Lexer's last token
-            else:
-                current_line = self.current_token.line
-                self.current_token = Token(current_line, "ERROR", TokenType.ERROR)
+#            # not EOF, as it's always the Lexer's last token
+#            else:
+#                current_line = self.current_token.line
+#                self.current_token = Token(current_line, "ERROR", TokenType.ERROR)
         else:
             self.error([token_type])
 

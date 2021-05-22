@@ -2,20 +2,27 @@ if (false) {
   -- this will never run
 }
 
-if (a) {
-	Number a = 10;
+Bool x = true;
+Number y = 0;
+if (x) {
+	y = 10;
 }
 else {
-	Number a = 20;
+	y = 20;
 }
 
-if(d = a >= b and c < d or b == c) {
-  Int c = 10;
-  String d = "abc";
-  d = d + "def";
+Number n1 = 12;
+Number n2 = 0;
+Number n3 = 10;
+Number n4 = 15;
+Bool d;
+if(d = n1 >= n2 and n1 < n3 or n1 == n4) {
+  n1 = 10;
+  String s = "abc";
+
+  s = s + "def";
 }
 else {
-  Number n = 20;
+  n1 = 20;
 }
-
 
