@@ -1,4 +1,13 @@
+"""
+Danilo Bizarria
+Kaike Rodrigues
+Markel Duarte
+Matheus Ferreira
+Rafael Lino
+"""
+
 from enum import Enum, auto
+
 
 class NodeType(Enum):
     BOOL = auto()

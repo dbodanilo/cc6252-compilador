@@ -1,3 +1,10 @@
+"""
+Danilo Bizarria
+Kaike Rodrigues
+Markel Duarte
+Matheus Ferreira
+Rafael Lino
+"""
 
 from sys import stdin
 from symbol import SymbolTable
@@ -41,4 +48,5 @@ symbolTable = SymbolTable()
 par = Parser(Lexer(code, symbolTable), symbolTable)
 
 print(str(par.parse()))
+print(str(par.symbolTable))
 

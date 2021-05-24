@@ -6,7 +6,6 @@ Matheus Ferreira
 Rafael Lino
 """
 
-
 from enum import Enum, auto
 
 

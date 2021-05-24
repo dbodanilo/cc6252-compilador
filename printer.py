@@ -1,3 +1,11 @@
+"""
+Danilo Bizarria
+Kaike Rodrigues
+Markel Duarte
+Matheus Ferreira
+Rafael Lino
+"""
+
 from visitor import Visitor
 
 

@@ -1,3 +1,11 @@
+"""
+Danilo Bizarria
+Kaike Rodrigues
+Markel Duarte
+Matheus Ferreira
+Rafael Lino
+"""
+
 from tekken import TokenType, Token
 from symbol import Symbol
 from parseTree import *
@@ -207,7 +215,7 @@ class Parser:
         paramType = self.type()
         paramTypes.append(paramType)
 
-        left  = self.identifier()
+        left  = self.identifier(paramType.nodeType)
         right = ValueNode(None)
 
         # type identifier = assignment
@@ -234,7 +242,7 @@ class Parser:
             op = self.current_token
             self.eat(TokenType.OR)
             right = self.andExpr()
-            n_type = self.compType(left.nodeType, right.nodeType)
+            n_type = self.compType(left, right, "orExpr")
             _or = BinOpNode(left, right, op, n_type)
 
         return _or
@@ -248,7 +256,8 @@ class Parser:
             op = self.current_token
             self.eat(TokenType.AND)
             right = self.compExpr()
-            n_type = self.compType(left.nodeType, right.nodeType)
+#            print(f"left: {left}, right: {right}")
+            n_type = self.compType(left, right, "andExpr")
             _and = BinOpNode(left, right, op, n_type)
 
         return _and
@@ -262,9 +271,10 @@ class Parser:
             op = self.current_token
             self.eat(op.t_type)
             right = self.expr()
-            n_type = self.compType(left.nodeType, right.nodeType)
+            n_type = self.compType(left, right, "compExpr")
             _comp = BinOpNode(left, right, op, n_type)
 
+#        print(f"{_comp}")
         return _comp
 
  
@@ -281,7 +291,7 @@ class Parser:
             op = self.current_token
             self.eat(op.t_type)
             right = self.term()
-            n_type = self.compType(left.nodeType, right.nodeType)
+            n_type = self.compType(left, right, "expr")
             _expr = BinOpNode(left, right, op, n_type)
 
         return _expr
@@ -295,15 +305,19 @@ class Parser:
             op = self.current_token
             self.eat(op.t_type)
             right = self.negation()
-            n_type = self.compType(left.nodeType, right.nodeType)
+            n_type = self.compType(left, right, "term")
             _term = BinOpNode(left, right, op, n_type)
 
         return _term
 
-    def compType(self, left, right):
-        if left == right:
-            return left
-        self.error([left], "Incompatible Type")
+    def compType(self, left, right, exprType):
+        if left.nodeType == right.nodeType:
+            return left.nodeType
+        # "Incompatible Type" was not as helpful
+        # to distinguish between syntax and semantics errors
+        if NodeType.ERROR not in (left.nodeType, right.nodeType):
+            self.error([left.nodeType], f"Invalid Semantics on {exprType}", right)
+
         return NodeType.ERROR
 
 
@@ -314,7 +328,7 @@ class Parser:
             self.eat(op.t_type)
             value = self.negation()
 
-            _negation = NegationNode(op, value)
+            _negation = NegationNode(op, value, value.nodeType)
         else:
             _negation = self.factor()
         
@@ -332,7 +346,17 @@ class Parser:
 
         elif token.t_type == TokenType.IDENTIFIER:
             self.eat(TokenType.IDENTIFIER)
-            _factor = ValueNode(token, token.name)
+            # lookup type on symbol table
+            symbol = self.symbolTable.lookup(token.name, None)
+            nodeType = None
+            if symbol is None:
+                self.error([token.name], "Invalid Semantics", "no symbol")
+            elif symbol.s_type is None:
+                    self.error([token.name], "Invalid Semantics", "undeclared")
+            else:
+                nodeType = symbol.s_type
+
+            _factor = ValueNode(token, token.name, nodeType)
 
         elif token.t_type == TokenType.NUMBER:
             self.eat(TokenType.NUMBER)
@@ -388,24 +412,34 @@ class Parser:
         return ValueNode(token, token.name, nodeType)
 
 
-    def identifier(self, nodeType = None):
+    def identifier(self, nodeType):
         token = self.current_token
         self.eat(TokenType.IDENTIFIER)
-        declared = nodeType is not None
-        # get nodeType from symbolTable
-        #symbol = self.symbolTable.lookup(token.name, Symbol(token, nodeType, declared 
 
-        return ValueNode(token, token.name)
+        # not possible, as it's always called from 
+        # declaration() or param()
+#        declared = nodeType is not None
+
+        _identifier = ValueNode(token, token.name, nodeType) 
+ 
+        # get nodeType from symbolTable
+        symbol = self.symbolTable.lookup(token.name, None)
+        if symbol is None:
+            self.error([nodeType], "Symbol not found", None)
+        else: 
+            symbol.s_type = nodeType
+            symbol.declared = True
+            self.symbolTable.insert(token.name, symbol)
+
+        return _identifier 
 
 
     def value(self):
         pass
         
 
-    def error(self, types, errMsg="Invalid Syntax"):
+    def error(self, types, errMsg="Invalid Syntax", nodeType=None):
         if not self.has_error:
-             self.has_error = True
-
              token = self.current_token
 
              msg = f"Line {token.line}, {errMsg}: expected "
@@ -416,11 +450,21 @@ class Parser:
                      msg += f"{str(t)}, "
              else:
                  msg += f"{str(types[0])}, "
-             msg += f"got {token.t_type}"
+
+             currentType = token.t_type
+             if nodeType is not None:
+                 currentType = nodeType
+             # only change current_token, 
+             # and report error on syntax errors
+             else:
+                 self.current_token = Token(token.line, "ERROR", TokenType.ERROR)
+                 self.has_error = True
+
+
+             msg += f"got {currentType}"
 
              print(msg)
 
-             self.current_token = Token(token.line, "ERROR", TokenType.ERROR)
 
 
     def eat(self, token_type):

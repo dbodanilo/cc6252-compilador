@@ -6,37 +6,24 @@ Matheus Ferreira
 Rafael Lino
 """
 
-"""
-{
-int a = 10;
-}
-
-Token tk_a = Token("a", TokenType.IDENTIFIER, ...)
-Symbol(tk_a, LangType.Int, ScopeType.Local)
-
-LangType.Int
-scope = local|global
-
-Token - Linha do codigo, lexema, tokenType
-
-X = symbol(TOK, int, global)
-
-"""
-
-
 from tekken import Token
 
 
 class Symbol():
-    def __init__(self, token, s_type = None, scope = None, declared = False, initialized = False):
+    def __init__(self, token, s_type = None, declared = False, initialized = False, scope = None):
         self.token = token
         self.s_type = s_type
-        self.scope = scope
         self.declared = declared
         self.initialized = initialized
+        self.scope = scope
 
     def __str__(self):
-        str_symbol = f"{{ token:  {str(self.token)} }}"
+        str_symbol = "{\n"
+        str_symbol += f"token:  {str(self.token)},\n"
+        str_symbol += f"s_type: {str(self.s_type)},\n"
+        str_symbol += f"declared {str(self.declared)},\n"
+        str_symbol += "}"
+
         return str_symbol
 
 
@@ -54,6 +41,7 @@ class SymbolTable():
 
     def lookup(self, name, default = None):
         return self.table.get(name, default)
+
 
     def __str__(self):
         str_table = "{\n"

@@ -183,8 +183,8 @@ class Lexer:
         self.tokens.append(newToken)
 
         if tokenType in (TokenType.TYPE, TokenType.IDENTIFIER):
-            sym = Symbol(newToken)
-            self.symbolTable.insert(tokenChar, sym) 
+            sym = self.symbolTable.lookup(tokenChar, Symbol(newToken))
+            self.symbolTable.insert(tokenChar, sym)
 
         return newToken
 

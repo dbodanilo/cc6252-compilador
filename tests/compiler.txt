@@ -1,0 +1,13 @@
+{
+int a = 10;
+}
+
+Token tk_a = Token("a", TokenType.IDENTIFIER, ...)
+Symbol(tk_a, LangType.Int, ScopeType.Local)
+
+LangType.Int
+scope = local|global
+
+Token - Linha do codigo, lexema, tokenType
+
+X = symbol(TOK, int, global)

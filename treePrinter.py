@@ -1,9 +1,15 @@
+"""
+Danilo Bizarria
+Kaike Rodrigues
+Markel Duarte
+Matheus Ferreira
+Rafael Lino
+"""
 
 from sys import stdin
 from symbol import SymbolTable
 from lexer import Lexer
 from parser import Parser
-
 from printer import TreePrinter
 
 
