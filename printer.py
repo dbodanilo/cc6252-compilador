@@ -6,10 +6,11 @@ Matheus Ferreira
 Rafael Lino
 """
 
-from visitor import Visitor
+# there's no need for base class
+#from visitor import Visitor
 
 
-class TreePrinter(Visitor):
+class TreePrinter():
     def __init__(self):
         self.level = 0
         self.is_last = False

@@ -10,6 +10,7 @@ from sys import stdin
 from symbol import SymbolTable
 from lexer import Lexer
 from parser import Parser
+from backend import PythonGenerator
 
 
 def get_tokens(lexer):
@@ -45,8 +46,14 @@ symbolTable = SymbolTable()
 #print_tokens(tokens)
 #print(str(lex.symbolTable))
 
-par = Parser(Lexer(code, symbolTable), symbolTable)
+lexer = Lexer(code, symbolTable)
 
-print(str(par.parse()))
-print(str(par.symbolTable))
+parser = Parser(lexer, symbolTable)
+
+syntaxTree = parser.parse()
+#print(str(syntaxTree))
+#print(str(parser.symbolTable))
+
+generator = PythonGenerator()
+generator.generate(syntaxTree)
 

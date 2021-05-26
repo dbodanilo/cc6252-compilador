@@ -1,0 +1,12 @@
+
+#for(decl; condition; assign) {
+#   block
+#}
+
+# translates to
+
+decl
+while condition:
+    block
+    assign
+

@@ -1,6 +1,7 @@
-{
+-- blocos aleatórios não são permitidos
+-- {
 int a = 10;
-}
+-- }
 
 Token tk_a = Token("a", TokenType.IDENTIFIER, ...)
 Symbol(tk_a, LangType.Int, ScopeType.Local)
