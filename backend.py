@@ -50,9 +50,12 @@ class PythonGenerator():
 
 
     def visit_decl(self, node):
+        if node.right.nodeType == NodeType.FUNCTION:
+            print("def ", end="")
         node.left.accept(self)
-        print(f" = ", end="")
-        node.right.accept(self) 
+        if node.right.nodeType != NodeType.FUNCTION:
+            print(f" = ", end="")
+        node.right.accept(self)
 
     
     def visit_error(self, node):
@@ -76,7 +79,25 @@ class PythonGenerator():
 
     
     def visit_function(self, node):
-        print("# function")
+        print("(", end="")
+        for i in range(0, node.arity):
+            param = node.params[i]
+            param.accept(self)
+            if i < node.arity - 1:
+                print(", ", end="")
+        print("):")
+        self.level += 1
+        node.block.accept(self)
+        self.level -= 1
+
+    def visit_funciton_call(self, node):
+        node.name.accept(self)
+        arity = len(node.params)
+        for i, param in enumerate(node.params):
+            param.accept(self)
+            if i < arity - 1:
+                print(",", end="")
+        print(")", end="")
 
 
     # probably won't be used

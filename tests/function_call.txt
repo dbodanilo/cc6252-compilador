@@ -1,0 +1,12 @@
+Bool boolFromNumber(Number n) {
+  Bool b = n < 10;
+  return b and n > 0;
+}
+
+Number old;
+
+Bool cmp(Number current = old = 10, Number x = 30)
+{
+  return current < x;
+}
+Bool a = cmp(12, 40);

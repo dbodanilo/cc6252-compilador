@@ -5,7 +5,7 @@ Markel Duarte
 Matheus Ferreira
 Rafael Lino
 """
-
+import sys
 from tekken import Token
 from tekken import TokenType
 from symbol import Symbol
@@ -273,7 +273,7 @@ class Lexer:
     def error(self, c_char = 'EOF'):
 
         def log_error(msg = "Unrecognized Character"):
-            print(f"Line {self.line}, Invalid Input: {msg} \'{c_char}\'")
+            print(f"Line {self.line}, Invalid Input: {msg} \'{c_char}\'", file=sys.stderr)
 #            tokenError = Token(self.line, c_char, TokenType.ERROR)
             # treat unrecognized char as whitespace
             return self.push_space()

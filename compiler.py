@@ -54,6 +54,7 @@ syntaxTree = parser.parse()
 #print(str(syntaxTree))
 #print(str(parser.symbolTable))
 
-generator = PythonGenerator()
-generator.generate(syntaxTree)
+if not parser.has_error and not parser.has_semantic_error:
+    generator = PythonGenerator()
+    generator.generate(syntaxTree)
 

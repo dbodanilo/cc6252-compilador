@@ -93,6 +93,13 @@ class ForNode():
     def accept(self, visitor):
         return visitor.visit_for(self)
 
+class FunctionCallNode():
+    def __init__(self, name, params):
+        self.name = name
+        self.params = params
+
+    def accept(self, visitor):
+        return visitor.visit_funciton_call(self)
 
 class FunctionNode():
     def __init__(self, returnType, params, block):
@@ -100,6 +107,7 @@ class FunctionNode():
         self.params = params
         self.block = block
         self.arity = len(params)
+        self.nodeType = NodeType.FUNCTION
 
     def __str__(self):
         fnstr = "("

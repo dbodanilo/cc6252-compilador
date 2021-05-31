@@ -5,7 +5,7 @@ Markel Duarte
 Matheus Ferreira
 Rafael Lino
 """
-
+import sys
 from tekken import TokenType, Token
 from symbol import Symbol
 from parseTree import *
@@ -18,6 +18,7 @@ class Parser:
         self.current_token = self.lexer.get_token()
 #        print(self.current_token)
         self.has_error = False
+        self.has_semantic_error = False
         self.tokens = []
 
 
@@ -211,6 +212,7 @@ class Parser:
         return FunctionNode(returnType, params, functionBlock)
 
 
+
     def param(self, paramTypes):
         paramType = self.type()
         paramTypes.append(paramType)
@@ -272,6 +274,8 @@ class Parser:
             self.eat(op.t_type)
             right = self.expr()
             n_type = self.compType(left, right, "compExpr")
+            if n_type != NodeType.ERROR:
+                n_type = NodeType.BOOL
             _comp = BinOpNode(left, right, op, n_type)
 
 #        print(f"{_comp}")
@@ -330,9 +334,24 @@ class Parser:
 
             _negation = NegationNode(op, value, value.nodeType)
         else:
-            _negation = self.factor()
+            _negation = self.function_call()
         
         return _negation
+
+    def function_call(self):
+        _function_call = self.factor()
+        if self.current_token == TokenType.LEFT_PAREN:
+            self.eat(TokenType.LEFT_PAREN)
+            params = []
+            while self.current_token.t_type != TokenType.RIGHT_PAREN and not self.has_error:
+                params.append(self.assignment())
+
+            if self.current_token.t_type != TokenType.RIGHT_PAREN:
+                self.eat(TokenType.COMMA)
+
+            self.eat(TokenType.RIGHT_PAREN)
+
+        return _function_call
 
 
     def factor(self):
@@ -454,6 +473,7 @@ class Parser:
              currentType = token.t_type
              if nodeType is not None:
                  currentType = nodeType
+                 self.has_semantic_error = True
              # only change current_token, 
              # and report error on syntax errors
              else:
@@ -463,7 +483,7 @@ class Parser:
 
              msg += f"got {currentType}"
 
-             print(msg)
+             print(msg, file=sys.stderr)
 
 
 
