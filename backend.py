@@ -90,8 +90,10 @@ class PythonGenerator():
         node.block.accept(self)
         self.level -= 1
 
-    def visit_funciton_call(self, node):
+
+    def visit_function_call(self, node):
         node.name.accept(self)
+        print("(", end="")
         arity = len(node.params)
         for i, param in enumerate(node.params):
             param.accept(self)

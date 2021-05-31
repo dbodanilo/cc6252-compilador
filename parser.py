@@ -70,7 +70,7 @@ class Parser:
 
 
     def emptyLine(self):
-        self.eat(TokenType.SEMICOLON)      
+        self.eat(TokenType.SEMICOLON, "emptyLine")
 
         # move on to next line
         return self.line()
@@ -84,7 +84,7 @@ class Parser:
         if self.current_token.t_type != TokenType.SEMICOLON:
             returnValue = self.assignment()
 
-        self.eat(TokenType.SEMICOLON)
+        self.eat(TokenType.SEMICOLON, "returnLine")
 
         return ReturnNode(returnValue)
 
@@ -100,7 +100,7 @@ class Parser:
             decl = self.assignmentLine()
         
         condition = self.assignment()
-        self.eat(TokenType.SEMICOLON)
+        self.eat(TokenType.SEMICOLON, "loopFor")
 
         assign = self.assignment()
         self.eat(TokenType.RIGHT_PAREN)
@@ -150,7 +150,7 @@ class Parser:
     def assignmentLine(self):
         _line = self.assignment()
 
-        self.eat(TokenType.SEMICOLON)
+        self.eat(TokenType.SEMICOLON, "assignmentLine")
         return _line
 
 
@@ -191,7 +191,7 @@ class Parser:
 
         # type identifier ;
         else:
-            self.eat(TokenType.SEMICOLON)
+            self.eat(TokenType.SEMICOLON, "declaration")
 
         return DeclNode(declType, left, right)
 
@@ -333,23 +333,27 @@ class Parser:
             value = self.negation()
 
             _negation = NegationNode(op, value, value.nodeType)
+
         else:
             _negation = self.function_call()
         
         return _negation
 
+
     def function_call(self):
         _function_call = self.factor()
-        if self.current_token == TokenType.LEFT_PAREN:
+        if self.current_token.t_type == TokenType.LEFT_PAREN:
             self.eat(TokenType.LEFT_PAREN)
             params = []
             while self.current_token.t_type != TokenType.RIGHT_PAREN and not self.has_error:
                 params.append(self.assignment())
 
-            if self.current_token.t_type != TokenType.RIGHT_PAREN:
-                self.eat(TokenType.COMMA)
+                if self.current_token.t_type != TokenType.RIGHT_PAREN:
+                    self.eat(TokenType.COMMA)
 
             self.eat(TokenType.RIGHT_PAREN)
+            
+            _function_call = FunctionCallNode(_function_call, params, NodeType.FUNCTION_CALL)
 
         return _function_call
 
@@ -487,7 +491,7 @@ class Parser:
 
 
 
-    def eat(self, token_type):
+    def eat(self, token_type, function=None):
         current_type = self.current_token.t_type
         if current_type == token_type:
 #            print(self.current_token)
@@ -498,5 +502,9 @@ class Parser:
 #                current_line = self.current_token.line
 #                self.current_token = Token(current_line, "ERROR", TokenType.ERROR)
         else:
-            self.error([token_type])
+            if function is not None:
+                msg = f"Invalid Syntax at {function}"
+                self.error([token_type], msg)
+            else:
+                self.error([token_type])
 

@@ -59,7 +59,9 @@ expr = term [ , ( "+" | "-" ) , term ] ;
 term = negation [ , ( "*" | "/" ) , negation ] ;
 
 negation = ( "not" | "-" ) negation 
-         | factor ; 
+         | function_call ;
+
+function = factor  
 
 factor = "(" , assignment , ")"
        | identifier 

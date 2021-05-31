@@ -51,10 +51,12 @@ lexer = Lexer(code, symbolTable)
 parser = Parser(lexer, symbolTable)
 
 syntaxTree = parser.parse()
+
 #print(str(syntaxTree))
 #print(str(parser.symbolTable))
 
-if not parser.has_error and not parser.has_semantic_error:
+if not parser.has_error:
+#and not parser.has_semantic_error:
     generator = PythonGenerator()
     generator.generate(syntaxTree)
 

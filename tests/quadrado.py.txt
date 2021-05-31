@@ -1,0 +1,10 @@
+
+Number l = 10;
+
+Number per = 4 * l;
+
+Number area = l * l;
+
+String msg = "quadrado de lado: " + str(l) + ":\nperímetro: " + str(per) + " - área: " + str(area);
+
+print (msg);

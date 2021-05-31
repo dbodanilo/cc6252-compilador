@@ -14,6 +14,7 @@ class NodeType(Enum):
     NUMBER = auto()
     STRING = auto()
     FUNCTION = auto()
+    FUNCTION_CALL = auto()
     OBJECT = auto()
     ERROR = auto()
 
@@ -93,13 +94,16 @@ class ForNode():
     def accept(self, visitor):
         return visitor.visit_for(self)
 
+
 class FunctionCallNode():
-    def __init__(self, name, params):
+    def __init__(self, name, params, nodeType=None):
         self.name = name
         self.params = params
+        self.nodeType = nodeType
 
     def accept(self, visitor):
-        return visitor.visit_funciton_call(self)
+        return visitor.visit_function_call(self)
+
 
 class FunctionNode():
     def __init__(self, returnType, params, block):
