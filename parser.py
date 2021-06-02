@@ -20,6 +20,19 @@ class Parser:
         self.has_error = False
         self.has_semantic_error = False
         self.tokens = []
+        self.line_cases = {
+            TokenType.IDENTIFIER: self.assignmentLine,
+            TokenType.IF: self.conditional,
+            TokenType.TYPE: self.declaration,
+            TokenType.FOR: self.loopFor,
+            TokenType.WHILE: self.loopWhile,
+            TokenType.RETURN: self.returnLine,
+
+            # a single semicolon
+            TokenType.SEMICOLON: self.emptyLine,
+            # EOF
+            TokenType.EOF: lambda: None,
+        }
 
 
     def get_tokens(self):    
@@ -45,24 +58,9 @@ class Parser:
     
 
     def line(self):
-        cases = {
-                TokenType.IDENTIFIER: self.assignmentLine,
-                TokenType.IF: self.conditional,
-                TokenType.TYPE: self.declaration,
-                TokenType.FOR: self.loopFor,
-                TokenType.WHILE: self.loopWhile,
-                TokenType.RETURN: self.returnLine,
-
-                # a single semicolon
-                TokenType.SEMICOLON: self.emptyLine,
-
-                # EOF
-                TokenType.EOF: lambda: None,
-                }
-
         token = self.current_token
 
-        linefun = cases.get(token.t_type, None)
+        linefun = self.line_cases.get(token.t_type, None)
         if linefun is not None:
             return linefun()
 
@@ -141,7 +139,14 @@ class Parser:
         self.eat(TokenType.LEFT_BRACE)
         lineList = []
         while self.current_token.t_type != TokenType.RIGHT_BRACE and not self.has_error:
-            lineList.append(self.line())
+#            print(f"lines: {len(lineList)}", file=sys.stderr)
+            line = self.line()
+            # unterminated block at EOF
+            # (no closing brace)
+            if line is None:
+               self.error([TokenType.RIGHT_BRACE])
+
+            lineList.append(line)
         self.eat(TokenType.RIGHT_BRACE)
         
         return BlockNode(lineList) 

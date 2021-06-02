@@ -1,0 +1,15 @@
+
+Number fact(Number n) {
+    if(n < 3) {  
+         return n;
+    }
+
+    return n*fact(n-1);
+}
+
+Number n = 5;
+
+String msg = str(n) + "! = " + str(fact(n));
+
+print(msg);
+

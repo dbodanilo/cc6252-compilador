@@ -100,6 +100,18 @@ class FunctionCallNode():
         self.name = name
         self.params = params
         self.nodeType = nodeType
+        self.arity = len(params)
+
+    def __str__(self):
+        callstr = f"{str(self.name)}("
+        for i, param in enumerate(self.params):
+            callstr += f"{str(param)}"
+            if i < self.arity - 1:
+                callstr += ", "
+
+        callstr += ")"
+
+        return callstr
 
     def accept(self, visitor):
         return visitor.visit_function_call(self)
